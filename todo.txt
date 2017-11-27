@@ -1,4 +1,5 @@
 -- Add authentication
+-- Cleanup the sms-form.   Turn off authentication warning when size goes down.  Remove last message text after hitting send, etc.
 -- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
 -- Break out the webhook specific code so that twilio or another service could do the message
 -- create a readme at the top.   This could link to the client and server readmes

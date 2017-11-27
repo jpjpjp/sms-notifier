@@ -200,6 +200,7 @@ class App extends Component {
     return (
       <div className="App">
         <header className="Message Form">
+          <br />
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to the Albany Bike Rescue SMS Notifier</h1>
         </header>
