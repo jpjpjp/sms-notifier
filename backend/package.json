@@ -1,9 +1,4 @@
 {
-  "//": "This is a comment",
-  "//": "package.json lives in the backend directory of this project",
-  "//": "A linked version of this is in the root directory for heroku"
-},
-{
   "name": "sms-notifier-backend",
   "version": "1.0.0",
   "description": "Backend to support a react app that maintains a member list and manages SMS communication to the members",
