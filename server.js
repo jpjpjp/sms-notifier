@@ -66,7 +66,7 @@ app.use(function(req, res, next) {
 // Express only serves static assets in production
 if (process.env.NODE_ENV === 'production') {
   console.log('Running in production mode with static client assets.');
-  app.use(express.static('../client/build'));
+  app.use(express.static('client/build'));
 }
 
 app.listen(port);
