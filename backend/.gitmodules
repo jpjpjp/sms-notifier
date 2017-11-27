@@ -1,0 +1,4 @@
+[submodule "tropo-webapi-node"]
+	path = tropo-webapi-node
+	url = https://github.com/tropo/tropo-webapi-node.git
+	branch = master

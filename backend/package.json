@@ -1,0 +1,21 @@
+{
+  "name": "sms-notifier-backend",
+  "version": "1.0.0",
+  "description": "Backend to support a react app that maintains a member list and manages SMS communication to the members",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.3",
+    "mongodb": "^2.2.33",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "JP Shipherd",
+  "license": "ISC"
+}

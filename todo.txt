@@ -1,0 +1,28 @@
+-- Add authentication
+-- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
+-- Break out the webhook specific code so that twilio or another service could do the message
+-- create a readme at the top.   This could link to the client and server readmes
+-- Make ABR stuff (logo, name) work with environment variables
+-- Set up webhooks, update received send counts in database
+-- Set up websockets, dynamically update the table data based on backend changes
+-- Handle opt out functionality in the inbound message responder
+-- Add admin functionality.  Admin gets any responses, can opt out
+-- Store admin numbers in DB if an admin sends a message to our number it will broadcast to the default distribution list
+-- Warn if user tries to activate someone who has opted out.
+-- Keep a store of sent messages in the database
+-- Add export to csv of membershp list
+-- Add a view of past messages (message, initiator username, recipient numbers)
+-- Figure out how to set up Mongo IP Whitelist for Heroku production
+-- Allow users to cancel/edit in the dialog after send it
+
+Done:
+11/22/17 -- Show something when the backend is not available, Submit button generates error box.
+11/22/17 -- Break out the Tropo specific code so that twilio or another service could do the message
+11/22/17 -- Wrap the outbound message with info about who its from and how to opt out
+11/24/17 -- -- Hook up database to backend, Make database work using environment variabless
+11/25/17 -- Add an "UpdateMember method to the backend.  Should check if the phone number doesn't match the _id and delete/replace in this case.
+11/25/17 -- Save each row to backend whenever any change is made.  Check if the number doesn't match the key.  If so delete old and create new, else just update it.
+11/25/17 -- Figure out why columns don't line up
+
+
+

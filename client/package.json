@@ -1,0 +1,20 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "google-libphonenumber": "^3.0.9",
+    "react": "^16.1.1",
+    "react-bootstrap": "^0.31.5",
+    "react-bootstrap-table": "^4.1.5",
+    "react-dom": "^16.1.1",
+    "react-scripts": "1.0.17"
+  },
+  "scripts": {
+    "start": "react-scripts start sms-form.js",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:1185"
+}

@@ -1,0 +1,52 @@
+@import url('./my-notify.css');
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: 3s infinite alternate slideIn
+  /*
+  animation: App-logo-ride infinite 20s linear;
+  animation-direction: normal, reverse;
+  height: 80px;
+  */
+}
+
+.App-header {
+  background-color: white;
+  height: 150px;
+  padding: 20px;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.Error-Message {
+  color: #D8000C;
+  background-color: #FFD2D2;
+}
+
+.Member-Managment{
+  background-color: #222;
+  padding: 20px;
+  color: white;
+}
+
+.Validation-Warning{
+  size: small; 
+  color: red
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes App-logo-ride {
+  from { left: 0; }
+  to { right: 0; }
+}
+
+
