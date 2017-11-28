@@ -5,7 +5,7 @@ export default class Auth {
   auth0 = new auth0.WebAuth({
     domain: 'albany-bike-resue.auth0.com',
     clientID: 'lM1xONo6ZIXx3se41jnVAD10ia2DRzCq',
-    redirectUri: 'http://localhost:3000/callback',
+    redirectUri: 'https://localhost:3000/callback',
     audience: 'localhost:1185',
     responseType: 'token id_token',
     scope: 'openid'
@@ -16,6 +16,11 @@ export default class Auth {
     this.logout = this.logout.bind(this);
     this.handleAuthentication = this.handleAuthentication.bind(this);
     this.isAuthenticated = this.isAuthenticated.bind(this);
+    if (process.env.REACT_APP_OAUTH_CALLBACK) {
+      this.auth0.redirect.baseOptions.redirectUri = process.env.REACT_APP_OAUTH_CALLBACK;
+    } else {
+      alert('Cound\'t read the REACT_APP_OAUTH_CALLBACK from the environment');
+    }
   }
 
   handleAuthentication() {
