@@ -9,7 +9,7 @@
       "request": "launch",
       "protocol": "inspector",
       "name": "Launch Program",
-      "program": "${workspaceFolder}/backend/server.js"
+      "program": "${workspaceFolder}/server.js"
     }
   ]
 }

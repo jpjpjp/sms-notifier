@@ -39,6 +39,30 @@
   color: red
 }
 
+.navbar-header{
+  width:100%;
+}
+
+.logo-left{
+  float:left;
+  padding: 10px 0;
+}
+
+.navbar-brand
+{
+  position: absolute;
+  margin:0  auto;
+  width: 80%;
+  left: 100px;
+  right: 0;
+  text-align: center;
+}
+
+.second-button{
+  text-align: right;
+  padding: 10px 0 0 0;
+}
+
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
