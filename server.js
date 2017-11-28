@@ -34,7 +34,7 @@ var jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
-app.use(jwtCheck);
+//app.use(jwtCheck);
 
 // HTTP library to communicate with cPaaS
 //var request = require('request');
@@ -98,9 +98,15 @@ app.get('/authorized', function (req, res) {
 // Nonetheless we need a was to set up sessions
 app.get('/', function (req, res) {
   debug('Got a GET request to /');
-  var sess = req.session;
-  sess.papiLoginCompleted = false;
-  res.sendFile( __dirname + '/' + 'tropo-login-form.html' );
+  res.sendFile(__dirname + '/client/build/index.html');
+});
+
+app.get('/callback', function (req, res) {
+  if (process.env.NODE_ENV !== 'production') {
+    res.status(400).send('callback endpointed not supported in non production environments');
+  }
+  debug('Auth callback landed on server, will redirect to react for client side handling')
+  res.sendFile(__dirname + '/client/build/index.html');
 });
 
 // Provide the list of members to the client

@@ -10,7 +10,6 @@ if((!process.env.REACT_APP_OAUTH_CALLBACK) || (!process.env.REACT_APP_OAUTH_DOMA
   (!process.env.REACT_APP_OAUTH_CLIENT_ID) || (!process.env.REACT_APP_OAUTH_AUDIENCE)) {
     alert('Cound\'t read the OAUTH config from the environment');    
 }
-alert(process.env.REACT_APP_OAUTH_CALLBACK);    
 
 export default class Auth {
   auth0 = new auth0.WebAuth({
@@ -27,9 +26,10 @@ export default class Auth {
     this.logout = this.logout.bind(this);
     this.handleAuthentication = this.handleAuthentication.bind(this);
     this.isAuthenticated = this.isAuthenticated.bind(this);
-    if (process.env.REACT_APP_OAUTH_CALLBACK) {
-      this.auth0.redirect.baseOptions.redirectUri = process.env.REACT_APP_OAUTH_CALLBACK;
-    } else {
+    //If I'm emulating production mode in my local dev environment I reset the callback to hit my express server
+    if (process.env.DEV_MODE === 'production') {
+      this.auth0.redirect.baseOptions.redirectUri = 'http://localhost:1185/callback';
+      alert('Reset callback to '+ this.auth0.redirect.baseOptions.redirectUri);
     }
   }
 
