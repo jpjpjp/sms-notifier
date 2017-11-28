@@ -109,8 +109,19 @@ app.get('/callback', function (req, res) {
   res.sendFile(__dirname + '/client/build/index.html');
 });
 
-// Provide the list of members to the client
-// TODO modularize the member database functionality
+/** 
+ * Routes for managing the member list
+ * 
+ * @function /getMembers
+ * @function /addMember
+ * @function /updateMember
+ * @function /deleteMember
+ * 
+ * We expect the react client to call these routes
+ * These routes are all secured by checking with an access token
+ */
+
+ // Provide the list of members to the client
 app.get('/getMembers', jwtCheck, function (req, res) {
   memberList.updateMemberListFromDb(function (err, list) {
     if (err) {
@@ -119,50 +130,6 @@ app.get('/getMembers', jwtCheck, function (req, res) {
     }
     res.send(list);
   });
-  /*
-  res.send([
-    {
-      '_id': '518-641-1967',
-      'number': '518-641-1967',
-      'firstName': 'jp',
-      'lastName': 'google voice',
-      'optOut': false,
-      'active': true,
-      'confirmedSent': 0,
-      'confirmedFailed': 0
-    },
-    {
-      '_id': '4085553421',
-      'number': '4085553421',
-      'firstName': 'hipster',
-      'lastName': 'dude',
-      'optOut': true,
-      'active': false,
-      'confirmedSent': 0,
-      'confirmedFailed': 0
-    },
-    {
-      '_id': '8885551234',
-      'number': '8885551234',
-      'firstName': 'jane',
-      'lastName': 'rider',
-      'optOut': false,
-      'active': true,
-      'confirmedSent': 0,
-      'confirmedFailed': 0
-    },
-    {
-      '_id': '7813086976',
-      'number': '7813086976',
-      'firstName': 'JP',
-      'lastName': 'Shipherd',
-      'optOut': false,
-      'active': true,
-      'confirmedSent': 0,
-      'confirmedFailed': 0
-    }
-  ]);
-  */
 });
 
 
@@ -174,8 +141,6 @@ app.get('/getMembers', jwtCheck, function (req, res) {
  *  'firstName': 
  *  'lastName': 
  *  'isAdmin': boolean
- * 
- * TODO figure out how auth works!
  */
 app.post('/addMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
@@ -185,32 +150,19 @@ app.post('/addMember', jwtCheck, function (req, res) {
   } catch (e) {
     res.status(400).send('Invalid JSON Payload');
   }
-  /*
-  memberList.addMember(member)
-    .then(r => {
-      console.log(r);
-      res.status(r.status).send(r.message);
-    })
-    .catch(e => {
-      console.log(r);
-      res.status(e.status).send(e.message)
-    });
-    */
-    memberList.addMember(member, function(err, dbResult){
-      if (err) {
-        res.status(500).send(err.message);
-      } else {
-        res.status(dbResult.status).send(dbResult.message);
-      }
-    })
-  });
+  memberList.addMember(member, function(err, dbResult){
+    if (err) {
+      res.status(500).send(err.message);
+    } else {
+      res.status(dbResult.status).send(dbResult.message);
+    }
+  })
+});
 
 /*
  * This is the API for updating an existing member the list
  * 
  * It expects an application/json payload as follows with the full member info
- * 
- * TODO figure out how auth works!
  */
 app.post('/updateMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
@@ -256,8 +208,6 @@ app.post('/updateMember', jwtCheck, function (req, res) {
  * 
  * It expects an application/json payload as follows:
  *  '_id': key of member to delete
- * 
- * TODO figure out how auth works!
  */
 app.post('/deleteMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
@@ -276,41 +226,35 @@ app.post('/deleteMember', jwtCheck, function (req, res) {
   });
 });
 
-/*
-// TODO need to add authentication to this app somehow
-app.post('/tropo_login', function (req, res) {
-  var sess = req.session;
-  debug('In t/ropo_login with session id: %s', sess.id);
-  var myPapiUser = new papiUsers(papiUri, req.body.tropo_user, req.body.tropo_pw);
-  //myPapiUser.lookupUserRoles(req.body.tropo_user, request, checkUserRoles(req, res));
-  myPapiUser.lookupUserRoles(req.body.tropo_user, request)
-    .then(function (roles) {
-      checkUserRoles(req, res, roles);
-    })
-    .catch(function(err){
-      console.log('Failed getting Tropo Webhook Data Object:'+err.message);
-      var msg = ' <br><a href=\'./\'>Try Again?</a>';
-      msg = 'FAIL: Lookup User Roles failed:' + err.message + msg;
-      console.log(msg);
-      return res.send(msg);
-    });
-});
+/** 
+ * This is the API for sending a single SMS to one or more destinations
+ * 
+ * @function /sendMessage
+ * It expects an application/json payload as follows:
+ *   message: text of message to send
+ *   numbers: comma seperated list of phone numbers to deliver the message to
+ * 
+ * When a valid request body is received a request is made to a cPaaS provider to send the messages
+ * 
+ * We expect the react client to call these routes
+ * These routes are all secured by checking with an access token
 */
-
-/*
-   * This is the API for sending a single SMS to one or more destinations
-   * 
-   * It expects an application/json payload as follows:
-   *   message: text of message to send
-   *   numbers: comma seperated list of phone numbers to deliver the message to
-   * 
-   * When a valid request body is received a request is made to a cPaaS provider
-   * to send the messages
-*/
-app.post('/sendMessage', function (req, res) {
+app.post('/sendMessage', jwtCheck, function (req, res) {
   cPaasConnector.processSendRequest(req, res, myWebhookData);
   //TODO implement a mechanism to timeout if we never hear back from the cPaaS
 });
+
+
+/** 
+ * Routes for the cPaas to call back into
+ * 
+ * @function /initialCPaaSUrl
+ * @function TODO webhook url
+ * 
+ * We expect the the cPaaS to call these routes
+ * These routes are not secured an access token
+ */
+
 
 /*
    * This is the URL that a cPaaS provider calls back to in response to a request
