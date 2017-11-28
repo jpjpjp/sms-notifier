@@ -1,12 +1,23 @@
 import auth0 from 'auth0-js';
 import history from './history';
 
+
+var dotenv = require('dotenv')
+dotenv.load();
+
+//alert(result.parsed)
+if((!process.env.REACT_APP_OAUTH_CALLBACK) || (!process.env.REACT_APP_OAUTH_DOMAIN) || 
+  (!process.env.REACT_APP_OAUTH_CLIENT_ID) || (!process.env.REACT_APP_OAUTH_AUDIENCE)) {
+    alert('Cound\'t read the OAUTH config from the environment');    
+}
+alert(process.env.REACT_APP_OAUTH_CALLBACK);    
+
 export default class Auth {
   auth0 = new auth0.WebAuth({
-    domain: 'albany-bike-resue.auth0.com',
-    clientID: 'lM1xONo6ZIXx3se41jnVAD10ia2DRzCq',
-    redirectUri: 'https://localhost:3000/callback',
-    audience: 'localhost:1185',
+    domain: process.env.REACT_APP_OAUTH_DOMAIN,
+    clientID: process.env.REACT_APP_OAUTH_CLIENT_ID,
+    redirectUri: process.env.REACT_APP_OAUTH_CALLBACK,
+    audience: process.env.REACT_APP_OAUTH_AUDIENCE,
     responseType: 'token id_token',
     scope: 'openid'
   });
@@ -19,7 +30,6 @@ export default class Auth {
     if (process.env.REACT_APP_OAUTH_CALLBACK) {
       this.auth0.redirect.baseOptions.redirectUri = process.env.REACT_APP_OAUTH_CALLBACK;
     } else {
-      alert('Cound\'t read the REACT_APP_OAUTH_CALLBACK from the environment');
     }
   }
 
