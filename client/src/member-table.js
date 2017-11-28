@@ -1,19 +1,12 @@
 import React from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 require('./member-table.css');
-require('./react-bootstrap-table-all.min.css');
-
-
-const Tips = () => (
-  <div style={{ textAlign: 'center' }}>
-    <em>Tip: Hold shift when sorting to multi-sort!</em>
-  </div>
-);
+require('react-bootstrap-table/dist/react-bootstrap-table-all.min.css');
 
 const MemberHeader = () => (
   <div className='Member-Managment'>
-    <h1>Membersip List</h1>
-    <h3>Messages are sent to the phone number for each member who's row is checked.<br/></h3>   
+    <h2>Membersip List</h2>
+    <h4>Messages are sent to the phone number for each member who's row is checked.<br/></h4>   
   By default all members who haven't explicitly opted out of SMS Notifications are checked, but you can modify the recipients for your mesage before hitting the send button.
   </div>
 );
@@ -157,8 +150,6 @@ class MemberTable extends React.Component {
           <TableHeaderColumn dataField='confirmedFailed' dataSort={ true } hiddenOnInsert editable={ false } width='8%'>Failed</TableHeaderColumn>
           <TableHeaderColumn dataField='button' dataFormat={ this.deleteUserButton.bind(this) } hiddenOnInsert editable={ false } export={ false }>Action</TableHeaderColumn>
         </BootstrapTable>
-        <br />
-        <Tips />
       </div>
     );
   }
