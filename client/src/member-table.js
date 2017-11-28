@@ -93,7 +93,6 @@ class MemberTable extends React.Component {
   }
 
   onClickDeleteMember(cell, row, rowIndex){
-    console.log('Delete Member ID:', cell);
     cellEditProp.onDeleteUser(row, rowIndex);
   }
  
@@ -110,10 +109,13 @@ class MemberTable extends React.Component {
   }
 
   render() {
-    if (this.props.memberData.length === 0) {
+    if (!this.props.dbInitiatalized) {
+      return (null);
+      }
+    if (!this.props.dbConnected) {
       return (
         <div className='my-notify-error'>
-        Backend not available.  Please try again later.
+          Backend not available.  Please try again later.
         </div>
       );
     }

@@ -15,7 +15,9 @@ function findWithAttr(array, attr, value) {
 }
 
 class Home extends Component {
-  state = {users: [], numbers: [], selected: []}
+  state = {
+    users: [], numbers: [], selected: [], 
+    dbInitiatalized: false, dbConnected: false}
 
   login() {
     this.props.auth.login();
@@ -27,6 +29,8 @@ class Home extends Component {
   componentDidMount(){
     fetch('/getMembers', {
       method: 'get',
+      mode: 'cors', 
+      redirect: 'follow',
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
@@ -49,15 +53,21 @@ class Home extends Component {
           selected.push(users[i]._id);
         }
       }
-      this.setState({ users: users, numbers: numbers, selected: selected });
-      this.refs.MemberTable.refs.MemberTable.forceUpdate();
+      this.setState({ users: users, numbers: numbers, 
+        selected: selected, dbInitiatalized: true, dbConnected: true});
+      //this.refs.MemberTable.refs.MemberTable.forceUpdate();
     })
-    .catch(e => console.error(e));
+    .catch(e => {
+      console.error(e.message)
+      this.setState({ dbInitiatalized: true })
+    });
   }
 
   onDeleteUser = (member, index) => {
     fetch('/deleteMember', {
       method: 'post',
+      mode: 'cors', 
+      redirect: 'follow',
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
@@ -81,6 +91,7 @@ class Home extends Component {
       this.setState({ users: users, numbers: numbers, selected: selected });  
     })
     .catch(e => {
+      this.setState({ dbConnected: false });
       return alert('Removing member from DB failed: ' + e.response.status);
     });
   }
@@ -93,9 +104,10 @@ class Home extends Component {
       return false;
     }
 
-    console.log(localStorage.getItem('Authorization')); 
     fetch('/addMember', {
       method: 'post',
+      mode: 'cors', 
+      redirect: 'follow',
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
@@ -116,6 +128,7 @@ class Home extends Component {
       this.setState({ users: users, numbers: numbers, selected: selected });  
     })
     .catch(e => {
+      this.setState({ dbConnected: false });
       return alert('Writing to DB failed: ' + e.response.status);
     });
   }
@@ -124,6 +137,8 @@ class Home extends Component {
     // push the change to the backend
     fetch('/updateMember', {
       method: 'post',
+      mode: 'cors', 
+      redirect: 'follow',
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
@@ -147,6 +162,7 @@ class Home extends Component {
       }  
     })
     .catch(e => {
+      this.setState({ dbConnected: false });
       return alert('Writing to DB failed: ' + e.response.status);
     });
   }
@@ -188,6 +204,8 @@ class Home extends Component {
             <div className="Member-Table">
               <MemberTable 
                 ref='MemberTable'
+                dbInitiatalized={this.state.dbInitiatalized}
+                dbConnected={this.state.dbConnected}
                 memberData={this.state.users} 
                 optIns={this.state.selected} 
                 dataUpdateCallback={this.onFormDataUpdate}

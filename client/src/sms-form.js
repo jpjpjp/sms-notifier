@@ -28,9 +28,11 @@ class SMSForm extends React.Component {
       method: 'POST',
       mode: 'cors', 
       redirect: 'follow',
-      headers: new Headers({
-        'Content-Type': 'application/json'
-      }),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        "Authorization": localStorage.getItem('Authorization')
+      },
       body: JSON.stringify({
         message: this.state.value,
         numbers: numberString

@@ -10,8 +10,10 @@ if((!process.env.REACT_APP_OAUTH_CALLBACK) || (!process.env.REACT_APP_OAUTH_DOMA
     alert('Cound\'t read the OAUTH config from the environment');    
 }
 
-alert(process.env.REACT_APP_OAUTH_DOMAIN+', '+process.env.REACT_APP_OAUTH_CLIENT_ID+ ', ' +
-  process.env.REACT_APP_OAUTH_CALLBACK+', '+process.env.REACT_APP_OAUTH_AUDIENCE);
+/*
+  alert(process.env.REACT_APP_OAUTH_DOMAIN+', '+process.env.REACT_APP_OAUTH_CLIENT_ID+ ', ' +
+    process.env.REACT_APP_OAUTH_CALLBACK+', '+process.env.REACT_APP_OAUTH_AUDIENCE);
+*/
 
 
 export default class Auth {
