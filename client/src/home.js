@@ -25,27 +25,34 @@ class Home extends Component {
   }
 
   componentDidMount(){
-    fetch('/getMembers')
-      .then(res => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          return [];
+    fetch('/getMembers', {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        "Authorization": localStorage.getItem('Authorization')
+      }
+    })
+    .then(res => {
+      if (res.status === 200) {
+        return res.json();
+      } else {
+        return [];
+      }
+    })
+    .then(users => {
+      let numbers = [];
+      let selected = [];
+      for (const i in users) {
+        if (users[i].optOut === false){
+          numbers.push(users[i].number);
+          selected.push(users[i]._id);
         }
-      })
-      .then(users => {
-        let numbers = [];
-        let selected = [];
-        for (const i in users) {
-          if (users[i].optOut === false){
-            numbers.push(users[i].number);
-            selected.push(users[i]._id);
-          }
-        }
-        this.setState({ users: users, numbers: numbers, selected: selected });
-        this.refs.MemberTable.refs.MemberTable.forceUpdate();
-      })
-      .catch(e => console.error(e));
+      }
+      this.setState({ users: users, numbers: numbers, selected: selected });
+      this.refs.MemberTable.refs.MemberTable.forceUpdate();
+    })
+    .catch(e => console.error(e));
   }
 
   onDeleteUser = (member, index) => {
@@ -53,7 +60,8 @@ class Home extends Component {
       method: 'post',
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "Authorization": localStorage.getItem('Authorization')
       },
       body: JSON.stringify(member)
     })
@@ -85,11 +93,13 @@ class Home extends Component {
       return false;
     }
 
+    console.log(localStorage.getItem('Authorization')); 
     fetch('/addMember', {
       method: 'post',
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "Authorization": localStorage.getItem('Authorization')
       },
       body: JSON.stringify(row)
     })
@@ -116,7 +126,8 @@ class Home extends Component {
       method: 'post',
       headers: {
         'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "Authorization": localStorage.getItem('Authorization')
       },
       body: JSON.stringify(row)
     })
@@ -168,42 +179,40 @@ class Home extends Component {
     const { isAuthenticated } = this.props.auth;   
     return (
      <div className="App">
-        <div className="container">
-          {
-            isAuthenticated() && (
-              <div className="Message Form">
-                <div className='SMS-Form'>
-                  <SMSForm getNumbers={this.getNumbers}/>
-                </div>
-                <div className="Member-Table">
-                  <MemberTable 
-                    ref='MemberTable'
-                    memberData={this.state.users} 
-                    optIns={this.state.selected} 
-                    dataUpdateCallback={this.onFormDataUpdate}
-                    handleRowSelectCallback={this.onFormRowSelect}
-                    handleNewUser={this.onNewUser}
-                    handleDeleteUser={this.onDeleteUser}
-                  />
-                </div>
-              </div>
-            )
-          }
-          {
-            !isAuthenticated() && (
-                <h4>
-                  You are not logged in! Please{' '}
-                  <a
-                    style={{ cursor: 'pointer' }}
-                    onClick={this.login.bind(this)}
-                  >
-                    Log In
-                  </a>
-                  {' '}to continue.
-                </h4>
-              )
-          }
-        </div>
+        {
+          isAuthenticated() && (
+          <div className="Message Form">
+            <div className='SMS-Form'>
+              <SMSForm getNumbers={this.getNumbers}/>
+            </div>
+            <div className="Member-Table">
+              <MemberTable 
+                ref='MemberTable'
+                memberData={this.state.users} 
+                optIns={this.state.selected} 
+                dataUpdateCallback={this.onFormDataUpdate}
+                handleRowSelectCallback={this.onFormRowSelect}
+                handleNewUser={this.onNewUser}
+                handleDeleteUser={this.onDeleteUser}
+              />
+            </div>
+          </div>
+        )
+        }
+        {
+          !isAuthenticated() && (
+            <h4>
+                You are not logged in! Please{' '}
+              <a
+                style={{ cursor: 'pointer' }}
+                onClick={this.login.bind(this)}
+              >
+                Log In
+              </a>
+              {' '}to continue.
+            </h4>
+          )
+        }
       </div>
     );
   }

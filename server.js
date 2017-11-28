@@ -19,6 +19,23 @@ var express = require('express'),
 var bodyParser = require('body-parser');
 var debug = require('debug')('SMSNotifierServer');
 
+// Libs for validating JWTs
+var jwt = require('express-jwt');
+var jwks = require('jwks-rsa');
+var jwtCheck = jwt({
+  secret: jwks.expressJwtSecret({
+      cache: true,
+      rateLimit: true,
+      jwksRequestsPerMinute: 5,
+      jwksUri: "https://albany-bike-resue.auth0.com/.well-known/jwks.json"
+  }),
+  audience: 'localhost:1185',
+  issuer: "https://albany-bike-resue.auth0.com/",
+  algorithms: ['RS256']
+});
+
+app.use(jwtCheck);
+
 // HTTP library to communicate with cPaaS
 //var request = require('request');
 // Request Debug library dumps all kinds of info to the console
@@ -72,6 +89,10 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(port);
 console.log('server listening on ' + port);
 
+app.get('/authorized', function (req, res) {
+  res.send('Secured Resource');
+});
+
 // Set Express Routes and fire up the server
 // TODO This can probably be updated to a keep alive of sorts
 // Nonetheless we need a was to set up sessions
@@ -84,7 +105,7 @@ app.get('/', function (req, res) {
 
 // Provide the list of members to the client
 // TODO modularize the member database functionality
-app.get('/getMembers', function (req, res) {
+app.get('/getMembers', jwtCheck, function (req, res) {
   memberList.updateMemberListFromDb(function (err, list) {
     if (err) {
       console.error(err.message);
@@ -150,7 +171,7 @@ app.get('/getMembers', function (req, res) {
  * 
  * TODO figure out how auth works!
  */
-app.post('/addMember', function (req, res) {
+app.post('/addMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
   let member = {};
   try {
@@ -185,7 +206,7 @@ app.post('/addMember', function (req, res) {
  * 
  * TODO figure out how auth works!
  */
-app.post('/updateMember', function (req, res) {
+app.post('/updateMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
   let member = {};
   try {
@@ -232,7 +253,7 @@ app.post('/updateMember', function (req, res) {
  * 
  * TODO figure out how auth works!
  */
-app.post('/deleteMember', function (req, res) {
+app.post('/deleteMember', jwtCheck, function (req, res) {
   // Get the JSON body out of the request
   let member = {};
   try {

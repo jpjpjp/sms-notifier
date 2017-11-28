@@ -6,7 +6,7 @@ export default class Auth {
     domain: 'albany-bike-resue.auth0.com',
     clientID: 'lM1xONo6ZIXx3se41jnVAD10ia2DRzCq',
     redirectUri: 'http://localhost:3000/callback',
-    audience: 'https://albany-bike-resue.auth0.com/userinfo',
+    audience: 'localhost:1185',
     responseType: 'token id_token',
     scope: 'openid'
   });
@@ -36,6 +36,7 @@ export default class Auth {
     localStorage.setItem('access_token', authResult.accessToken);
     localStorage.setItem('id_token', authResult.idToken);
     localStorage.setItem('expires_at', expiresAt);
+    localStorage.setItem('Authorization', 'Bearer ' + authResult.accessToken)
     // navigate to the home route
     history.replace('/home');
   }
