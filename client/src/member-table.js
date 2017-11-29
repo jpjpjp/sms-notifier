@@ -5,7 +5,7 @@ require('react-bootstrap-table/dist/react-bootstrap-table-all.min.css');
 
 const MemberHeader = () => (
   <div className='Member-Managment'>
-    <h2>Membersip List</h2>
+    <h2>Volunteer Member List</h2>
     <h4>Messages are sent to the phone number for each member who's row is checked.<br/></h4>   
   By default all members who haven't explicitly opted out of Text Notifications are checked, but you can modify the recipients for your mesage before hitting the send button.
   </div>
@@ -31,7 +31,12 @@ function onBeforeSaveCell(row, cellName, cellValue) {
       return false;
     }
     // stash the old value of the number so we can update the numbers array
-    row.oldNumber =row.number;
+    row.oldNumber=row.number;
+  } else if(cellName === 'email') {
+    if (!cellValue.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
+      alert(`${cellValue} is an invalid email address.  Ignoring Change`);
+      return false;
+    }
   }
   //ignore if value didn't change
   if (cellValue === row[cellName]) {
