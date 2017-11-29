@@ -5,7 +5,7 @@ import { Button, ControlLabel, FormGroup, FormControl, HelpBlock } from 'react-b
 class SMSForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { message: "", errorMessage: "", 
+    this.state = { message: '', errorMessage: '', 
       numbers: props.numbers, 
       vmessage: 'Maximum text message length is 140 characters.'
     };
@@ -33,7 +33,7 @@ class SMSForm extends React.Component {
   }
 
   handleSubmit(event) {
-    alert("Will try to send Message: " + this.state.message);
+    alert('Will try to send Message: ' + this.state.message);
     let numbers = this.getNumbers();
     let numberString = numbers.join(',');
     let that = this;
@@ -44,28 +44,28 @@ class SMSForm extends React.Component {
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        "Authorization": localStorage.getItem('Authorization')
+        'Authorization': localStorage.getItem('Authorization')
       },
       body: JSON.stringify({
         message: this.state.message,
         numbers: numberString
       }),
     })
-    .then(res => {
-      if (res.status === 200) {
-        alert("Message sent succesfully");
-      } else {
-        alert('Messages failed to send.  Status: ' + res.status);
-      }
-      that.setState({isSending:false, message:''});
-    })    
-    .catch(e => {
-      alert('Messages failed to send.  '+e.message)
-      that.setState({isSending:false, message:''});
-    });
+      .then(res => {
+        if (res.status === 200) {
+          alert('Message sent succesfully');
+        } else {
+          alert('Messages failed to send.  Status: ' + res.status);
+        }
+        that.setState({isSending:false, message: ''});
+      })    
+      .catch(e => {
+        alert('Messages failed to send.  '+e.message);
+        that.setState({isSending:false});
+      });
   
     event.preventDefault();
-    this.setState({isSending:true, message:''});
+    this.setState({isSending:true});
   }
 
   buttonIsActive() {
@@ -78,38 +78,38 @@ class SMSForm extends React.Component {
   }
 
   render() {
-    const buttonIsActive=this.buttonIsActive()
+    const buttonIsActive=this.buttonIsActive();
     const isSending = this.state.isSending;
     const validationText = this.state.vmessage;
     return (
-     // <form className="Form">
       <form onSubmit={this.handleSubmit}>
         <FormGroup 
-          controlId="textMessageInputarea"
+          controlId='textMessageInputarea'
           validationState={this.getValidationState()}
         >
           <ControlLabel>Message from Albany Bike Rescue:</ControlLabel>
-          <FormControl componentClass="textarea" 
-            className="Text-Area"
-            placeholder="Enter your Text Message here..." 
+          <FormControl componentClass='textarea' 
+            className='Text-Area'
+            value={this.state.message}
+            placeholder='Enter your Text Message here...' 
             onChange={this.handleChange}
             style={{ width: 400, height: 50}}
           />
           <ControlLabel>Reply STOP to opt out.</ControlLabel>
           <HelpBlock style={{ width: 370}}>{ validationText }</HelpBlock>
-        </FormGroup>
-        <br />
-        <div className="Validation-Warning">
-        {this.state.errorMessage}
-        </div>
-        <div>
-          <Button bsStyle="primary" 
-            onClick={ buttonIsActive ? this.handleSubmit : null } 
-            disabled={ !buttonIsActive || isSending } 
+          <br />
+          <div className='Validation-Warning'>
+            {this.state.errorMessage}
+          </div>
+          <div>
+            <Button bsStyle='primary' 
+              onClick={ buttonIsActive ? this.handleSubmit : null } 
+              disabled={ !buttonIsActive || isSending } 
             >
               { buttonIsActive ? 'Send It!' : isSending ? 'Sending....' : 'Nothing to Send Yet' }
             </Button>
-        </div>
+          </div>
+        </FormGroup>
       </form>
     );
   }
@@ -119,7 +119,7 @@ class SMSForm extends React.Component {
             style={{ width: 400, height: 50 }}
             message={this.state.message}
             onChange={this.handleChange}
-            placeholder="Enter your Text Message here...."
+            placeholder='Enter your Text Message here....'
           />
 */
 
