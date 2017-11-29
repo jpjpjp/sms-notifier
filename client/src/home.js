@@ -15,9 +15,11 @@ function findWithAttr(array, attr, value) {
 }
 
 class Home extends Component {
-  state = {
-    users: [], numbers: [], selected: [], 
-    dbInitiatalized: false, dbConnected: false}
+  constructor(props) {
+    super(props);
+    this.state = {users: [], numbers: [], selected: [], 
+      dbInitiatalized: false, dbConnected: false}
+  }
 
   login() {
     this.props.auth.login();
@@ -34,7 +36,7 @@ class Home extends Component {
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        "Authorization": localStorage.getItem('Authorization')
+        'Authorization': localStorage.getItem('Authorization')
       }
     })
     .then(res => {
@@ -63,40 +65,7 @@ class Home extends Component {
     });
   }
 
-  onDeleteUser = (member, index) => {
-    fetch('/deleteMember', {
-      method: 'post',
-      mode: 'cors', 
-      redirect: 'follow',
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-        "Authorization": localStorage.getItem('Authorization')
-      },
-      body: JSON.stringify(member)
-    })
-    .then(res => {
-      if (res.status !== 200) {
-        // How do I delete this bad boy?
-        return alert('Removing member from DB failed: ' + res.status);
-      }
-      let users = this.state.users;
-      users.splice(index, 1);
-      let numbers = this.state.numbers;
-      let selected = this.state.selected;
-      let i = selected.indexOf(member._id)
-      if (i >= 0) {selected.splice(i,1);}
-      i = numbers.indexOf(member.number)
-      if (i >= 0) {numbers.splice(i,1);}
-      this.setState({ users: users, numbers: numbers, selected: selected });  
-    })
-    .catch(e => {
-      this.setState({ dbConnected: false });
-      return alert('Removing member from DB failed: ' + e.response.status);
-    });
-  }
-
-  onNewUser = (row) => {
+  onNewUser = (row) => { // eslint-disable-line
     // Fail if this number is already in use
     let users = this.state.users;
     if (findWithAttr(users, '_id', row._id) > 0) {
@@ -111,7 +80,7 @@ class Home extends Component {
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        "Authorization": localStorage.getItem('Authorization')
+        'Authorization': localStorage.getItem('Authorization')
       },
       body: JSON.stringify(row)
     })
@@ -142,7 +111,7 @@ class Home extends Component {
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        "Authorization": localStorage.getItem('Authorization')
+        'Authorization': localStorage.getItem('Authorization')
       },
       body: JSON.stringify(row)
     })
@@ -164,6 +133,39 @@ class Home extends Component {
     .catch(e => {
       this.setState({ dbConnected: false });
       return alert('Writing to DB failed: ' + e.response.status);
+    });
+  }
+
+  onDeleteUser = (member, index) => {
+    fetch('/deleteMember', {
+      method: 'post',
+      mode: 'cors', 
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('Authorization')
+      },
+      body: JSON.stringify(member)
+    })
+    .then(res => {
+      if (res.status !== 200) {
+        // How do I delete this bad boy?
+        return alert('Removing member from DB failed: ' + res.status);
+      }
+      let users = this.state.users;
+      users.splice(index, 1);
+      let numbers = this.state.numbers;
+      let selected = this.state.selected;
+      let i = selected.indexOf(member._id)
+      if (i >= 0) {selected.splice(i,1);}
+      i = numbers.indexOf(member.number)
+      if (i >= 0) {numbers.splice(i,1);}
+      this.setState({ users: users, numbers: numbers, selected: selected });  
+    })
+    .catch(e => {
+      this.setState({ dbConnected: false });
+      return alert('Removing member from DB failed: ' + e.response.status);
     });
   }
 
@@ -203,22 +205,17 @@ class Home extends Component {
     return this.state.numbers
   }
 
-  showForm = () => {
-
-  }
-
   render() {
     const { isAuthenticated } = this.props.auth;   
     return (
-     <div className="App">
+     <div className='App'>
         {
           isAuthenticated() && (
-          <div className="MessageForm">
+          <div className='Message Form'>
             <div className='SMS-Form'>
               <SMSForm getNumbers={this.getNumbers}/>
             </div>
-            <br />
-            <div className="Member-Table">
+            <div className='Member-Table'>
               <MemberTable 
                 ref='MemberTable'
                 dbInitiatalized={this.state.dbInitiatalized}
