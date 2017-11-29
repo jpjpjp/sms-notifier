@@ -1,9 +1,14 @@
 import React from 'react';
+import { Button, ControlLabel, FormGroup, FormControl, HelpBlock } from 'react-bootstrap';
+
 
 class SMSForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { value: "", errorMessage: "", numbers: props.numbers };
+    this.state = { message: "", errorMessage: "", 
+      numbers: props.numbers, 
+      vmessage: 'Maximum text message length is 140 characters.'
+    };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -11,19 +16,27 @@ class SMSForm extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({ value: event.target.value });
-    if (this.state.value.length >= 100) {
-      this.setState({
-        errorMessage:
-          "Message may be too long to send as one text.  Message may be split"
-      });
+    const length = this.state.message.length;
+    let vMessage = 'Maximum text message length is 140 characters.';
+    if (length >= 100) {
+      vMessage = 'Messages longer than 140 characters can still be sent, but may get split into multiple messages.';
     }
+    this.setState({ message: event.target.value, vmessage: vMessage });
+  }
+
+  getValidationState() {
+    const length = this.state.message.length;
+    if (length >= 100) {
+      return 'error';
+    }
+    return 'success';
   }
 
   handleSubmit(event) {
-    alert("Will try to send Message: " + this.state.value);
+    alert("Will try to send Message: " + this.state.message);
     let numbers = this.getNumbers();
     let numberString = numbers.join(',');
+    let that = this;
     fetch('/sendMessage', {
       method: 'POST',
       mode: 'cors', 
@@ -34,7 +47,7 @@ class SMSForm extends React.Component {
         "Authorization": localStorage.getItem('Authorization')
       },
       body: JSON.stringify({
-        message: this.state.value,
+        message: this.state.message,
         numbers: numberString
       }),
     })
@@ -44,31 +57,70 @@ class SMSForm extends React.Component {
       } else {
         alert('Messages failed to send.  Status: ' + res.status);
       }
-      console.log(res.body);
+      that.setState({isSending:false, message:''});
     })    
-    .catch(e => console.error(e));
+    .catch(e => {
+      alert('Messages failed to send.  '+e.message)
+      that.setState({isSending:false, message:''});
+    });
   
     event.preventDefault();
+    this.setState({isSending:true, message:''});
+  }
+
+  buttonIsActive() {
+    let numbers = this.getNumbers();
+    if ((numbers.length) && (this.state.message.length)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   render() {
+    const buttonIsActive=this.buttonIsActive()
+    const isSending = this.state.isSending;
+    const validationText = this.state.vmessage;
     return (
+     // <form className="Form">
       <form onSubmit={this.handleSubmit}>
-          <textarea
-            style={{ width: 400, height: 50 }}
-            value={this.state.value}
+        <FormGroup 
+          controlId="textMessageInputarea"
+          validationState={this.getValidationState()}
+        >
+          <ControlLabel>Message from Albany Bike Rescue:</ControlLabel>
+          <FormControl componentClass="textarea" 
+            className="Text-Area"
+            placeholder="Enter your Text Message here..." 
             onChange={this.handleChange}
-            placeholder="Enter your Text Message here...."
+            style={{ width: 400, height: 50}}
           />
+          <ControlLabel>Reply STOP to opt out.</ControlLabel>
+          <HelpBlock style={{ width: 370}}>{ validationText }</HelpBlock>
+        </FormGroup>
         <br />
         <div className="Validation-Warning">
         {this.state.errorMessage}
         </div>
-        <br />
-        <input type="submit" value="Send It!" />
+        <div>
+          <Button bsStyle="primary" 
+            onClick={ buttonIsActive ? this.handleSubmit : null } 
+            disabled={ !buttonIsActive || isSending } 
+            >
+              { buttonIsActive ? 'Send It!' : isSending ? 'Sending....' : 'Nothing to Send Yet' }
+            </Button>
+        </div>
       </form>
     );
   }
 }
+/*
+          <textarea
+            style={{ width: 400, height: 50 }}
+            message={this.state.message}
+            onChange={this.handleChange}
+            placeholder="Enter your Text Message here...."
+          />
+*/
 
 export default SMSForm;

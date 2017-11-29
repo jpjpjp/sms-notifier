@@ -7,7 +7,7 @@ const MemberHeader = () => (
   <div className='Member-Managment'>
     <h2>Membersip List</h2>
     <h4>Messages are sent to the phone number for each member who's row is checked.<br/></h4>   
-  By default all members who haven't explicitly opted out of SMS Notifications are checked, but you can modify the recipients for your mesage before hitting the send button.
+  By default all members who haven't explicitly opted out of Text Notifications are checked, but you can modify the recipients for your mesage before hitting the send button.
   </div>
 );
 
@@ -122,7 +122,9 @@ class MemberTable extends React.Component {
     const selectRow = {
       mode: 'checkbox', //radio or checkbox
       selected: this.props.optIns,
-      onSelect:  this.props.handleRowSelectCallback
+      onSelect:  this.props.handleRowSelectCallback,
+      onSelectAll: this.props.handleSelectAllCallback,
+      showOnlySelected: true
     };
 
     const tableOptions = {
@@ -146,7 +148,8 @@ class MemberTable extends React.Component {
           <TableHeaderColumn dataField='number' dataSort={ true }>Phone</TableHeaderColumn>
           <TableHeaderColumn dataField='firstName' dataSort={ true }>First Name</TableHeaderColumn>
           <TableHeaderColumn dataField='lastName' dataSort={ true }>Last Name</TableHeaderColumn>
-          <TableHeaderColumn dataField='isAdmin'  dataFormat={supportedFormatter} hiddenOnInsert >Admin</TableHeaderColumn>
+          <TableHeaderColumn dataField='email' dataSort={ true }>Email</TableHeaderColumn>
+          <TableHeaderColumn dataField='isAdmin' editable={ { type: 'checkbox', options: { values: 'true:false' } } }>Admin</TableHeaderColumn>          
           <TableHeaderColumn dataField='optOut'  dataFormat={supportedFormatter} dataSort={ true } hiddenOnInsert editable={ false } width='8%'>OptOut</TableHeaderColumn>
           <TableHeaderColumn dataField='confirmedSent' dataSort={ true } hiddenOnInsert editable={ false } width='8%'>Arrived </TableHeaderColumn>
           <TableHeaderColumn dataField='confirmedFailed' dataSort={ true } hiddenOnInsert editable={ false } width='8%'>Failed</TableHeaderColumn>

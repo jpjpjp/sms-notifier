@@ -29,6 +29,12 @@
   background-color: #FFD2D2;
 }
 
+.SMS-Form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .Member-Managment{
   background-color: #222;
   padding: 20px;

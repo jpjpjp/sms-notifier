@@ -1,4 +1,3 @@
--- Work if database is empty.  Should just show new members and gray out the send it button.
 -- Cleanup the sms-form.   Turn off authentication warning when size goes down.  Remove last message text after hitting send, etc.
 -- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
 -- Break out the webhook specific code so that twilio or another service could do the message
@@ -25,6 +24,6 @@ Done:
 11/25/17 -- Save each row to backend whenever any change is made.  Check if the number doesn't match the key.  If so delete old and create new, else just update it.
 11/25/17 -- Figure out why columns don't line up
 11/27/17 -- Add authentication
-
+11/28-17
 
 

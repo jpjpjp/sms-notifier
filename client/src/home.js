@@ -183,6 +183,22 @@ class Home extends Component {
     return true;
   }
 
+  onFormSelectAll = (isSelected, selectedUsers) => {
+    let selected = this.state.selected;
+    let numbers = this.state.numbers;
+    selected.splice(0,selected.length);
+    numbers.splice(0,numbers.length);
+    if (isSelected) {
+      let users = this.state.users;
+      for (let i=0; i<users.length; i++) {
+        selected.push(users[i]._id);
+        numbers.push(users[i].number);  
+      }
+    }
+    this.setState({numbers: numbers, selected: selected});
+    return true;
+  }
+
   getNumbers = () => {
     return this.state.numbers
   }
@@ -197,10 +213,11 @@ class Home extends Component {
      <div className="App">
         {
           isAuthenticated() && (
-          <div className="Message Form">
+          <div className="MessageForm">
             <div className='SMS-Form'>
               <SMSForm getNumbers={this.getNumbers}/>
             </div>
+            <br />
             <div className="Member-Table">
               <MemberTable 
                 ref='MemberTable'
@@ -210,6 +227,7 @@ class Home extends Component {
                 optIns={this.state.selected} 
                 dataUpdateCallback={this.onFormDataUpdate}
                 handleRowSelectCallback={this.onFormRowSelect}
+                handleSelectAllCallback={this.onFormSelectAll}
                 handleNewUser={this.onNewUser}
                 handleDeleteUser={this.onDeleteUser}
               />
