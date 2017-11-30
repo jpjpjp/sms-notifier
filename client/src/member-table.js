@@ -116,7 +116,7 @@ class MemberTable extends React.Component {
   render() {
     if (!this.props.dbInitiatalized) {
       return (null);
-      }
+    }
     if (!this.props.dbConnected) {
       return (
         <div className='my-notify-error'>
@@ -181,13 +181,11 @@ function isValidUsPhoneNumber(number) {
 function idFromNumber(number) {
   var bare_num = number.replace(/\D/g, '');
   if (bare_num.length === 10) {
-    return ('+1'+bare_num);
-  } else if ((bare_num.length === 11) && (bare_num[0] === '1')) {
-    return ('+'+bare_num);
-  } else {
+    return ('1'+bare_num);
+  } else if (!((bare_num.length === 11) && (bare_num[0] === '1'))) {
     alert('Can\'t calculate key from '+number);
-    return bare_num;
   }
+  return bare_num;
 }  
 
 export default MemberTable;

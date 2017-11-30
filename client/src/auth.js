@@ -2,12 +2,12 @@ import auth0 from 'auth0-js';
 import history from './history';
 
 
-var dotenv = require('dotenv')
+var dotenv = require('dotenv');
 dotenv.load();
 
 if((!process.env.REACT_APP_OAUTH_CALLBACK) || (!process.env.REACT_APP_OAUTH_DOMAIN) || 
   (!process.env.REACT_APP_OAUTH_CLIENT_ID) || (!process.env.REACT_APP_OAUTH_AUDIENCE)) {
-    alert('Cound\'t read the OAUTH config from the environment');    
+  alert('Cound\'t read the OAUTH config from the environment');    
 }
 
 /*
@@ -56,7 +56,7 @@ export default class Auth {
     localStorage.setItem('access_token', authResult.accessToken);
     localStorage.setItem('id_token', authResult.idToken);
     localStorage.setItem('expires_at', expiresAt);
-    localStorage.setItem('Authorization', 'Bearer ' + authResult.accessToken)
+    localStorage.setItem('Authorization', 'Bearer ' + authResult.accessToken);
     // navigate to the home route
     history.replace('/home');
   }
