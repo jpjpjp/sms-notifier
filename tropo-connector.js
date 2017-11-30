@@ -50,6 +50,10 @@ class TropoConnector {
     var tropoUri = this.tropoUri+'&network=SMS';
     tropoUri += '&numberToDial=' + encodeURIComponent(req.body.numbers);
     tropoUri += '&msg='+ encodeURIComponent(req.body.message);
+    if (req.body.isAdmin) {
+      tropoUri += '&isAdmin='+ encodeURIComponent(req.body.isAdmin);      
+      tropoUri += '&adminState='+ encodeURIComponent(req.body.adminState);
+    }
     
     //res.writeHead(200, {'content-type': 'text/plain'});
 
@@ -130,8 +134,13 @@ class TropoConnector {
 
       // Add Detail about who this is from and opt out chocies
       // TODO use an envrionment var for the sender
-      out_msg = out_msg.replace(/\n\n/g, '{newline}');
-      out_msg = 'Message from Albany Bike Rescue:{newline}' + out_msg + '{newline}Reply STOP to opt out.';
+      if (reqJson.session.parameters.isAdmin) {
+        var fromNum = this.tropoAdminNumber;
+      } else {
+        out_msg = out_msg.replace(/\n\n/g, '{newline}');
+        out_msg = 'Message from Albany Bike Rescue:{newline}' + out_msg + '{newline}Reply STOP to opt out.';
+        fromNum = this.tropoPublicNumber;
+      }
       // Build JSON to ask Tropo to perform request
       var out_num_array = out_num.split(',');
       out_num = out_num_array.pop();
@@ -141,7 +150,7 @@ class TropoConnector {
         //tropo.say(out_msg);
         //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
         console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
-        tropo.message(out_msg, out_num, null, 'TEXT', this.tropoPublicNumber, null, network, null, 120, null);
+        tropo.message(out_msg, out_num, null, 'TEXT', fromNum, null, network, null, 120, null);
         //tropo.hangup();
         out_num = out_num_array.pop();
       }
@@ -222,7 +231,7 @@ class TropoConnector {
       // Check if this is a message to the admin number
       // Check if this is a BROADCAST request from an admin
       // Send it to the list -- for now this is the ONLY functionality available
-      that.memberList.getMemberList(function(err, memberList) {
+      that.memberList.getMember(function(err, memberList) {
         if ((err)|| (!memberList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
         let msg = incomingMsg.replace(/\n\n/g, '{newline}');
         msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';

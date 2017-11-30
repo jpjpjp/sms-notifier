@@ -4,8 +4,6 @@
 -- Make ABR stuff (logo, name) work with environment variables
 -- Set up webhooks, update received send counts in database
 -- Set up websockets, dynamically update the table data based on backend changes
--- Handle opt out functionality in the inbound message responder
--- Add admin functionality.  Admin gets any responses, can opt out
 -- Store admin numbers in DB if an admin sends a message to our number it will broadcast to the default distribution list
 -- Warn if user tries to activate someone who has opted out.
 -- Keep a store of sent messages in the database
@@ -13,6 +11,9 @@
 -- Add a view of past messages (message, initiator username, recipient numbers)
 -- Figure out how to set up Mongo IP Whitelist for Heroku production
 -- Allow users to cancel/edit in the dialog after send it
+-- Think about fixing race condition if user opts out but client webpage is out of sync with DB.   This will fix itself if I ever do a websocket and dynamically update the send counts
+-- Add the ablity for an admin to reply to just one user (work around is for them to do it themselves)
+-- Send an SMS to a user from the Admin number if their admin status changes
 
 Done:
 11/22/17 -- Show something when the backend is not available, Submit button generates error box.
@@ -24,6 +25,8 @@ Done:
 11/25/17 -- Figure out why columns don't line up
 11/27/17 -- Add authentication
 11/28-17 -- Cleanup the sms-form.   Turn off authentication warning when size goes down.  Remove last message text after hitting send, etc.
+11/30/17 -- Handle opt out functionality in the inbound message responder
+11/30/17 -- Add admin functionality.  Admin gets any responses, can opt out
 
 
 

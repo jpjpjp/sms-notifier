@@ -103,7 +103,55 @@ class Home extends Component {
       });
   }
 
+
+  handleAdminChange = (row, cellName, cellValue) => {
+    // The table edits don't support boolean so fix it up here
+    let msg = '';
+    if (cellValue === 'true') {
+      row[cellName] = true;
+      msg = 'Welcome Admin to the Albany Bike Rescue Texting System\n'+
+        'Reply to send texts to all ABR Members.';
+    } else if (cellValue === 'false') {
+      row[cellName] = false;
+      msg= 'You are no longer an Administrator of the ABR Texting System\n'+
+        'Any messages sent to this number will be ignored.  Bye.';
+    }
+    else {
+      alert(`${cellValue} is an invalid true/false value.  Ignoring Change`);
+      return false;
+    }
+    // Send a message from the Admin number
+    fetch('/sendMessage', {
+      method: 'POST',
+      mode: 'cors', 
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('Authorization')
+      },
+      body: JSON.stringify({
+        message: msg,
+        numbers: row.number,
+        isAdmin: true,
+        adminState: row[cellName]
+      }),
+    })
+      .then(res => {
+        if (res.status !== 200) {
+          alert('Admin Message failed to send.  Status: ' + res.status);
+        }
+      })    
+      .catch(e => {
+        alert('Admin Message failed to send.  Status: '+e.message);
+      });
+  }
+
   onFormDataUpdate = (row, cellName, cellValue, indices) => {
+    // If a user is changing admin status we communicate to them via SMS
+    if(cellName === 'isAdmin') {
+      this.handleAdminChange(row, cellName, cellValue);
+    }
     // push the change to the backend
     fetch('/updateMember', {
       method: 'post',
