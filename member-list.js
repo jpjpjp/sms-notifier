@@ -8,8 +8,6 @@
 */
 /* eslint-disable no-console */
 
-dotenv = require('dotenv');
-dotenv.load();
 var debug = require('debug')('MemberList');
 
 // Keep track about "stuff" I learn from the users in a hosted Mongo DB
@@ -28,15 +26,6 @@ if ((process.env.MONGO_DB_USER) && (process.env.MONGO_DB_PASSWORD)) {
 //var mongoUri = 'mongodb://'+mConfig.mongoUser+':'+mConfig.mongoPass+'@'+mConfig.mongoUrl+mConfig.mongoDb+'?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin';
 var mongoUri = 'mongodb://'+mConfig.mongoUser+':'+mConfig.mongoPass+'@'+mConfig.mongoUrl
 
-mongo_client.connect(mongoUri, function(err, db) {
-  if (err) {return console.log('Error connecting to Mongo '+ err.message);}
-  db.collection(mConfig.mongoCollectionName, {strict:true}, function(err, collection) {
-    if (err) {return console.log('Error getting Mongo collection  '+ err.message);}
-    mConfig.collection = collection;
-    debug('Database connection for persistent storage is ready.');
-  });
-});
-
 /* Example Mongo Usage from tropo-usage-bot
 if (mCollection) {
   mCollection.findOne({'_id': bot.isDirectTo}, function(err, reply){
@@ -54,10 +43,34 @@ if (mCollection) {
 */
 
 class MemberList {
-  constructor() {
+  /**
+   * MemberList object constructor.  Connects to a mongoDB based on environment.
+   *   Optionally, calls a callback to inform creator that db is ready
+   *
+   * @function updateMemberListFromDb
+   * @param {callback} - callback when list has been updated from db
+   * @returns {array} -- an array of member objects populated from the db
+   */
+  constructor(cb) {
     // maintain an in memory copy of the member list
     // TODO figure out how to make this work for LARGE lists that can't all be in memory
     this.memberList = [];
+    mongo_client.connect(mongoUri, function(err, db) {
+      if (err) {return console.log('Error connecting to Mongo '+ err.message);}
+      db.collection(mConfig.mongoCollectionName, {strict:true}, function(err, collection) {
+        if (err) {
+          if (cb) {
+            return cb(err);
+          } else {
+            return console.log('Error getting Mongo collection  '+ err.message);}
+          }
+        mConfig.collection = collection;
+        // Optimize lookups of Admins
+        collection.ensureIndex('isAdmin');
+        let successMsg = 'Database connection for persistent storage is ready.';
+        if (cb) {cb(null, successMsg);}
+      });
+    });
   }
 
   /**
@@ -96,6 +109,49 @@ class MemberList {
   }
 
   /**
+   * Returns the list of Admins
+   *
+   * @function getAdminList
+   * @param {callback} - callback when list has been updated from db
+   * @returns {array} -- an array of member objects populated from the db
+   */
+  getAdminList(cb) {    
+    if (mConfig.collection) {
+      mConfig.collection.find({'isAdmin': 'true'}).toArray(function (err, list) {
+        if (err) {
+          return cb(err);
+        } else {
+          console.log('find admins returned: '+list.length);
+          return cb(null, list);
+        }
+      });
+    } else {
+      return cb(new Error('Database not ready'));
+    }
+  }
+
+  /**
+   * Returns details for a particular phone number
+   *
+   * @function getMember
+   * @param {string} - number of the member we want info for
+   * @param {callback} - callback when list has been updated from db
+   * @returns {array} -- an array of member objects populated from the db
+   */
+  getMember(number, cb) {    
+    if (mConfig.collection) {
+      mConfig.collection.findOne({_id: number}, function (err, member) {
+        if (err) {
+          return cb(err);
+        } else {
+          return cb(null, member);
+        }
+      });
+    } else {
+      return cb(new Error('Database not ready'));
+    }
+  }
+  /**
    * Adds a new member to the in memory and database version of the member list
    *
    * @function addMember
@@ -130,6 +186,34 @@ class MemberList {
     }
   }
   
+  /**
+   * Sets the optOut flag for a given member
+   *
+   * @function setOptOutStatus
+   * @param {string} number - Number of member to set
+   * @param {boolean} status - true or false
+   * @param {callback} - callback when list has been updated from db
+   * 
+   */
+  setOptOut(number, status, cb) {
+    let that = this;
+    if (mConfig.collection) {
+      mConfig.collection.update({_id: number}, {$set: {'optOut': status}}, function (err, res) {
+        if (err){
+          console.error(err.message);
+          return cb(err);
+        }
+        if ((res.result.ok) && (res.result.n > 0)) {
+          return cb(null, {status: 200, 
+            message: 'Opt Out flag set succesfully: '+status});            
+        } else {
+          return cb(new Error('Could not find member info for phone number: '+number));
+        }
+      });
+    } else {
+      return cb(new Error('Database not avaialble'));
+    }
+  }
 
   /**
    * Updates one of more fileds existing member both in-memory and in the DB and list

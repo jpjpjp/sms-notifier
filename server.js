@@ -12,6 +12,11 @@
  */
 /* eslint-disable no-console */
 
+// Tropo and Mongo modules read config from environment
+const dotenv = require('dotenv');
+dotenv.load();
+
+
 // Express Setup
 var express = require('express'),
   app     = express(),
@@ -24,13 +29,13 @@ var jwt = require('express-jwt');
 var jwks = require('jwks-rsa');
 var jwtCheck = jwt({
   secret: jwks.expressJwtSecret({
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 5,
-      jwksUri: "https://albany-bike-resue.auth0.com/.well-known/jwks.json"
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: 'https://albany-bike-resue.auth0.com/.well-known/jwks.json'
   }),
   audience: 'localhost:1185',
-  issuer: "https://albany-bike-resue.auth0.com/",
+  issuer: 'https://albany-bike-resue.auth0.com/',
   algorithms: ['RS256']
 });
 
@@ -43,12 +48,35 @@ var jwtCheck = jwt({
 
 // Create the connector to talk to the cPaaS (Communication Platform as a Service)
 // We use Tropo
+// This module needs the memberList object so we initialize it in the callback 
+// of the Member list constructor
 var TropoConnector = require('./tropo-connector.js');
-var cPaasConnector = new TropoConnector();
+var cPaasConnector = {};
 
 // Create the MemberList to talk to the database and maintain member list
 var MemberList = require('./member-list.js');
-var memberList = new MemberList();
+var memberList = new MemberList(function (err, msg) {
+  if (err) {
+    return console.error(err.message);
+  } else {
+    console.log(msg);
+    // 'PRIME' the db by getting the contents into memory for more efficient lookups
+    memberList.updateMemberListFromDb(function (err, list) {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log('Database initiatlized. '+list.length+' members available.');
+      // Now that the deb is wired up, initalize the cPaaS module
+      cPaasConnector = new TropoConnector(memberList);
+
+      // I probably should not start the server until here....
+      app.listen(port);
+      console.log('server listening on ' + port);
+    });
+  }
+});
+
+
 
 // This module manages an array of webhhook data object for each active session
 var AllWebhookData = require('./tropo-webhook-data.js');
@@ -86,8 +114,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));
 }
 
-app.listen(port);
-console.log('server listening on ' + port);
+// The server gets started in the callbacks from the support module constructors
+// See above
 
 app.get('/authorized', function (req, res) {
   res.send('Secured Resource');
@@ -105,7 +133,7 @@ app.get('/callback', function (req, res) {
   if (process.env.NODE_ENV !== 'production') {
     res.status(400).send('callback endpointed not supported in non production environments');
   }
-  debug('Auth callback landed on server, will redirect to react for client side handling')
+  debug('Auth callback landed on server, will redirect to react for client side handling');
   res.sendFile(__dirname + '/client/build/index.html');
 });
 
@@ -156,7 +184,7 @@ app.post('/addMember', jwtCheck, function (req, res) {
     } else {
       res.status(dbResult.status).send(dbResult.message);
     }
-  })
+  });
 });
 
 /*
@@ -396,11 +424,9 @@ app.get('/showEvents', function (req, res) {
 function idFromNumber(number) {
   var bare_num = number.replace(/\D/g, '');
   if (bare_num.length === 10) {
-    return ('+1'+bare_num);
-  } else if ((bare_num.length === 11) && (bare_num[0] === '1')) {
-    return ('+'+bare_num);
-  } else {
+    return ('1'+bare_num);
+  } else if (!((bare_num.length === 11) && (bare_num[0] === '1'))) {
     console.error('Can\'t calculate key from '+number);
-    return bare_num;
   }
+  return bare_num;
 }  

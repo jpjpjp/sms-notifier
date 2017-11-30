@@ -18,11 +18,19 @@ var request = require('request');
 // This is a helper library for calling Tropo if we ever get the NPM version right
 var tropo_webapi = require('tropo-webapi'); 
 
-// TODO:  I should update this so it reads the token from a config somwhere
-var tropoUri = '/1.0/sessions?action=create&token=416f444451534b5462596c4d466365514961625a77436c4778484f5771735a4d656f636c756575585770477a';
 
 class TropoConnector {
-  constructor() {
+  constructor(memberList) {
+    if ((!process.env.TROPO_PUBLIC_NUMBER) || (!process.env.TROPO_ADMIN_NUMBER) ||
+    (!process.env.TROPO_API_KEY)) {
+      console.error('Cannot read Tropo details from environment');
+    } else {
+      this.tropoPublicNumber = process.env.TROPO_PUBLIC_NUMBER;
+      this.tropoAdminNumber = process.env.TROPO_ADMIN_NUMBER;
+      this.tropoApiKey = process.env.TROPO_API_KEY;
+    }
+    this.tropoUri = '/1.0/sessions?action=create&token='+this.tropoApiKey;
+    this.memberList = memberList;
   }
 
 
@@ -34,14 +42,12 @@ class TropoConnector {
      * @param {object} req - Body of original HTTP request from the client
      * @param {object} res - Response object that this method should use
      */
-
   processSendRequest(req, res, myWebhookData) {
-    var tropoUri = '/1.0/sessions?action=create&token=416f444451534b5462596c4d466365514961625a77436c4778484f5771735a4d656f636c756575585770477a';
     if ((!req.body) || (!req.body.message) || (!req.body.numbers)) {
       res.send(422, 'Missing required form data');
       return;
     }
-    tropoUri += '&network=SMS';
+    var tropoUri = this.tropoUri+'&network=SMS';
     tropoUri += '&numberToDial=' + encodeURIComponent(req.body.numbers);
     tropoUri += '&msg='+ encodeURIComponent(req.body.message);
     
@@ -68,7 +74,7 @@ class TropoConnector {
       res.writeHead(200, {'content-type': 'text/html'});
       res.write('<html><body>Unable to create Webhook Data object for Tropo request:<br>');
       res.write(err.message);
-      res.end('<br/><a href=\"/\">Return to form to Try again</a></body></html>');
+      res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>');
     });
   }
 
@@ -86,90 +92,153 @@ class TropoConnector {
   processInitialCallback(req, res) {
     // Check if Tropo called us in response to an inbound event or a request
     try {
-      var userType = req.body.session.userType;
-    }
-    catch (e) {
-      return this.tropoError(res, 'Unable to find userType in Tropo JSON payload. Cannot report status back to Spark Space.');
-    }
-    var reqJson, resJson = {};
-    debug(reqJson=req.body);
-    var userType = reqJson.session.userType;
-    var numberToDial, network, msg;
-    var tropo = new TropoWebAPI();
-  
-    // Handle inbound messages or calls
-    // TOD Add Opt Out logic
-    // TODO Add handler to broadcast replies to admins who have opted in
-    if (('undefined' != userType) && (userType === 'HUMAN')) {
-      console.log('Responding to a response');
-      out_num = reqJson.session.from.e164Id;
-      if ((reqJson.session.from.channel != 'undefind') && (reqJson.session.from.channel === 'VOICE')) {
-        //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
-        tropo.say("Hi.  I'm a Tropo dot com app,  I make outbound calls and send messages, but I don't do anything interesting if you call me.");      
-      } else {
-        //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
-        tropo.say("I got your reply, but I don't do anything interesting with it.  Like Greta Garbo kind of said: 'I want to be ignored...'");
+      var reqJson=req.body;
+      var userType = reqJson.session.userType;
+      var numberToDial, network, msg;
+      var tropo = new tropo_webapi.TropoWebAPI();
+      // Handle inbound messages or calls
+      if (('undefined' != userType) && (userType === 'HUMAN')) {
+        return this.processIncoming(res, reqJson, tropo);
       }
-      res.end(TropoJSON(tropo));
-      return;
-    }
 
-    // Ask Tropo to send the notification
-    // Lets check to see if the webform set any parameters
-    if ('undefined' === reqJson.session) {
-      return this.tropoError(res, "Can't respond to a Tropo request wth no session data");
-    }
-    // Set Default Values to use if not passed in as URL params
-    // TODO use environment variables for Admin stuff
-    var out_num = "+17813086976";  // JP's mobile phone
-    var out_msg = "JP, this is a message from the ABR Notifier.  If you are getting this something is amiss!";
-    var out_network = "SMS";
-    if ('undefined' != reqJson.parameters) {
-      numberToDial = reqJson.session.parameters.numberToDial;
-      network = reqJson.session.parameters.network;
-      msg = reqJson.session.parameters.msg;
-    }
-    // Handle webform values if they are set
-    if (typeof numberToDial !== 'undefined') {
-      console.log("Got number to dial from the webform: " + numberToDial);
-      out_num = numberToDial;
-    }
-    if (typeof network !== 'undefined') {
-      console.log("Got network from the webform: " + network);
-      out_network = network.toUpperCase();
-      if ((out_network != "SMS") && (out_network != "PSTN")  && (out_network != "SIP")) {
-          out_network = "PSTN";
+      // Set Default Values to use if not passed in as URL params
+      // TODO use environment variables for Admin stuff
+      var out_num = '+17813086976';  // JP's mobile phone
+      var out_msg = 'JP, this is a message from the ABR Notifier.  If you are getting this something is amiss!';
+      var out_network = 'SMS';
+      if ('undefined' != reqJson.parameters) {
+        numberToDial = reqJson.session.parameters.numberToDial;
+        network = reqJson.session.parameters.network;
+        msg = reqJson.session.parameters.msg;
       }
-    }
-    if (typeof msg !== 'undefined') {
-      console.log("Got msg from the webform: " + msg);
-      out_msg = msg;
-    }  
+      // Handle webform values if they are set
+      if (typeof numberToDial !== 'undefined') {
+        console.log('Got number to dial from the webform: ' + numberToDial);
+        out_num = numberToDial;
+      }
+      if (typeof network !== 'undefined') {
+        console.log('Got network from the webform: ' + network);
+        out_network = network.toUpperCase();
+        if ((out_network != 'SMS') && (out_network != 'PSTN')  && (out_network != 'SIP')) {
+          out_network = 'PSTN';
+        }
+      }
+      if (typeof msg !== 'undefined') {
+        console.log('Got msg from the webform: ' + msg);
+        out_msg = msg;
+      }  
 
-    // Add Detail about who this is from and opt out chocies
-    // TODO use an envrionment var for the sender
-    out_msg = out_msg.replace(/\n\n/g, "{newline}");
-    out_msg = "Message from Albany Bike Rescue:{newline}" + out_msg + '{newline}Reply STOP to opt out.';
-    // Build JSON to ask Tropo to perform request
-    var out_num_array = out_num.split(',');
-    out_num = out_num_array.pop();
-    while (out_num) {
-      //to, answerOnMedia, channel, from, headers, name, network, recording, required, timeout
-      //tropo.call(out_num, null, null, null, null, null, out_network, null, null, 120);
-      //tropo.say(out_msg);
-      //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-      console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
-      tropo.message(out_msg, out_num, null, null, null, null, network, null, 120, null);
-      //tropo.hangup();
+      // Add Detail about who this is from and opt out chocies
+      // TODO use an envrionment var for the sender
+      out_msg = out_msg.replace(/\n\n/g, '{newline}');
+      out_msg = 'Message from Albany Bike Rescue:{newline}' + out_msg + '{newline}Reply STOP to opt out.';
+      // Build JSON to ask Tropo to perform request
+      var out_num_array = out_num.split(',');
       out_num = out_num_array.pop();
-    }
-    // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
-    var newJSON = tropo_webapi.TropoJSON(tropo);
-    newJSON = newJSON.replace(/{newline}/g, "\\n");
-    console.log(newJSON);
-    return res.end(newJSON);
-    
+      while (out_num) {
+        //to, answerOnMedia, channel, from, headers, name, network, recording, required, timeout
+        //tropo.call(out_num, null, null, null, null, null, out_network, null, null, 120);
+        //tropo.say(out_msg);
+        //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+        console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
+        tropo.message(out_msg, out_num, null, 'TEXT', this.tropoPublicNumber, null, network, null, 120, null);
+        //tropo.hangup();
+        out_num = out_num_array.pop();
+      }
+      // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
+      var newJSON = tropo_webapi.TropoJSON(tropo);
+      newJSON = newJSON.replace(/{newline}/g, '\\n');
+      console.log(newJSON);
+      return res.end(newJSON);
+    } catch (e) {
+      return this.tropoError(res, 'Unable to find userType in Tropo JSON payload. Cannot process request.');
+    }   
   }
+
+  /**
+   * This method generates a response to an incoming message or call
+   *
+   * @function processingIncoming
+   * @param {object} res - Response object that this method should use
+   * @param {object} reqJson - Payload of message from Tropo
+   * @param {object} tropo -- Tropo webAPI object to build response
+   * 
+   * This method will return a response to Tropo instructing it on how to respond
+   */
+  processIncoming(res, reqJson, tropo) {
+    console.log('Responding to a response');
+    var fromNum = reqJson.session.from.e164Id;
+    var toNum = reqJson.session.to.e164Id;
+    var incomingMsg = reqJson.session.initialText;
+
+    // Handle an unexpected phone call
+    if (reqJson.session.from.channel === 'VOICE') {
+      //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
+      tropo.say('Hi.  I\'m the Albany Bike Rescue text message phone number, but I don\'t do anything interesting if you call me.');      
+      return res.end(tropo_webapi.TropoJSON(tropo));
+    }
+
+    let that = this;
+    // Check if this is a response to the user number
+    if (toNum === this.tropoPublicNumber) {
+      // Check if this is a STOP or RESTART request
+      if ((incomingMsg.toUpperCase() === 'STOP') || (incomingMsg.toUpperCase() === 'RESTART')) {
+        // If so correlate the number and update the optOut field in the database
+        let optOut = true;
+        if (incomingMsg.toUpperCase() === 'RESTART') {optOut = false;} 
+        that.memberList.setOptOut(fromNum, optOut, function(err, status) {
+          if ((err)|| (!status)) {return that.tropoError(res, 'Cannot figure out who sent this! Ignoring');}          
+          // Respond that the optout will be enforced, or is taken off
+          let msg = 'You will no longer get text notifications from Albany Bike Rescue.  Reply RESTART to get them again.';
+          if (!optOut) {msg = 'You will start getting notifications from Albany Bike Resuce again.';}
+          tropo.message(msg, fromNum, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+          return res.end(tropo_webapi.TropoJSON(tropo));
+        });
+      } else {
+        // Else send it to the admins
+        // Get the details on who this was from
+        that.memberList.getMember(fromNum, function(err, member){
+          if ((err)|| (!member)) {return that.tropoError(res, 'Cannot figure out who sent this!  Ignoring');}          
+          let msg = member.firstName+' '+member.lastName+' ('+member.number+') responded:{newline}'+incomingMsg;
+          // Fetch the admins from the member list and send to each of them.
+          that.memberList.getAdminList(function (err, adminList){
+            if ((err)|| (!adminList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
+            for (let i=0; i<adminList.length; i++) {
+              let admin = adminList[i];
+              console.log('Sending message:'+msg + ' to: ' + admin.firstName);
+              //Call(to, answerOnMedia, channel, from, headers, name, network, recording, required, timeout, allowSignals, machineDetection, voice, callbackUrl, promptLogSecurity, label)
+              //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+              tropo.message(msg, admin.number, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
+            }
+            // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
+            var newJSON = tropo_webapi.TropoJSON(tropo);
+            newJSON = newJSON.replace(/{newline}/g, '\\n');
+            console.log(newJSON);
+            return res.end(newJSON);        
+          });
+        });
+      }
+    } else {
+      // Check if this is a message to the admin number
+      // Check if this is a BROADCAST request from an admin
+      // Send it to the list
+
+      // Check if this is a REPLY request from an admin
+      // Send it to the last number (this might be tricky if the server goes to sleep)
+      // Else respond that we don't know what to do with it (remind about the broadcast command)
+
+      // Else we didn't expect a text to this number, ignore
+
+      //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
+      tropo.say('I got your reply, but I don\'t do anything interesting with it.  Like Greta Garbo kind of said: \'I want to be ignored...\'');            
+      // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
+      var newJSON = tropo_webapi.TropoJSON(tropo);
+      newJSON = newJSON.replace(/{newline}/g, '\\n');
+      console.log(newJSON);
+      return res.end(newJSON);        
+    }
+  }
+
 
 
   /**
@@ -205,33 +274,36 @@ function tropoCallbackWithHttpResponse(res, webhookData) {
     }
     //Check for any unexpected status codes
     if(resp.statusCode !== 200){
-        tropoError='Invalid Status Code Returned:' + resp.statusCode + ' : ' + resp.text;
+      tropoError='Invalid Status Code Returned:' + resp.statusCode + ' : ' + resp.text;
     }
     if (tropoError){
       res.writeHead(200, {'content-type': 'text/html'});
       res.write('<html><body>');
       res.write(tropoError);
-      res.end('<br/><a href=\"/\">Return to form to Try again</a></body></html>'); 
+      res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>'); 
       return;     
     }
     var response = JSON.parse(body);
 
     // Set the Tropo session ID in the webhook Data object
     // TODO Handle an undefined id
-    webhookData.tropoSessionId = response.id
+    webhookData.tropoSessionId = response.id;
     // TODO set a timer to expire the webhook data element in the array after an hour
 
     // Send the response back to the HTTP client
+    /*
 		console.log('Displaying the Tropo response...');
 		res.writeHead(200, {'content-type': 'text/html'});
 		res.write('<html><body>Tropo Replied:<br>');
-		res.write('<textarea rows=\"10\" cols=\"80\" style=\"border:none;\">');
+		res.write('<textarea rows=\'10\' cols=\'80\' style=\'border:none;\'>');
 		res.write(body);
 		res.write('</textarea>');
     if (('undefined' != typeof(response.success)) && (true === response.success)) {
-      res.write('<br/><a href=\"/showEvents\?sessionId='+response.id+'">Display CDR and/or SMS Delivery Reports</a></body></html>');
+      res.write('<br/><a href=\'/showEvents\?sessionId='+response.id+''>Display CDR and/or SMS Delivery Reports</a></body></html>');
     }
-		res.end('<br/><a href=\"/\">Return to form to Try again</a></body></html>');
+    res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>');
+    */
+    res.send(200);
   };
 }
 
