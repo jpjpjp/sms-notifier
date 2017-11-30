@@ -60,19 +60,12 @@ var memberList = new MemberList(function (err, msg) {
     return console.error(err.message);
   } else {
     console.log(msg);
-    // 'PRIME' the db by getting the contents into memory for more efficient lookups
-    memberList.updateMemberListFromDb(function (err, list) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log('Database initiatlized. '+list.length+' members available.');
-      // Now that the deb is wired up, initalize the cPaaS module
-      cPaasConnector = new TropoConnector(memberList);
+    // Now that the deb is wired up, initalize the cPaaS module
+    cPaasConnector = new TropoConnector(memberList);
 
-      // I probably should not start the server until here....
-      app.listen(port);
-      console.log('server listening on ' + port);
-    });
+    // And start our server listening for requests....
+    app.listen(port);
+    console.log('server listening on ' + port);
   }
 });
 
