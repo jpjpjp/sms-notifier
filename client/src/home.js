@@ -29,7 +29,7 @@ class Home extends Component {
   }
 
   componentDidMount(){
-    fetch('/getMembers', {
+    fetch('/getMemberList', {
       method: 'get',
       mode: 'cors', 
       redirect: 'follow',

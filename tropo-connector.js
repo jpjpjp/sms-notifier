@@ -218,24 +218,35 @@ class TropoConnector {
           });
         });
       }
-    } else {
+    } else if (toNum === this.tropoAdminNumber) {
       // Check if this is a message to the admin number
       // Check if this is a BROADCAST request from an admin
-      // Send it to the list
-
-      // Check if this is a REPLY request from an admin
+      // Send it to the list -- for now this is the ONLY functionality available
+      that.memberList.getMemberList(function(err, memberList) {
+        if ((err)|| (!memberList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
+        let msg = incomingMsg.replace(/\n\n/g, '{newline}');
+        msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
+        for (let i=0; i<memberList.length; i++) {
+          let member = memberList[i];
+          //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+          if (!member.optOut) {
+            console.log('Broadcasting message:'+msg + ' to: ' + member.firstName);
+            tropo.message(msg, member.number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+          }
+        }
+        // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
+        var newJSON = tropo_webapi.TropoJSON(tropo);
+        newJSON = newJSON.replace(/{newline}/g, '\\n');
+        console.log(newJSON);
+        return res.end(newJSON);        
+      });
+      // Future feature:  Check if this is a REPLY request from an admin
       // Send it to the last number (this might be tricky if the server goes to sleep)
       // Else respond that we don't know what to do with it (remind about the broadcast command)
 
+    } else {
       // Else we didn't expect a text to this number, ignore
-
-      //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
-      tropo.say('I got your reply, but I don\'t do anything interesting with it.  Like Greta Garbo kind of said: \'I want to be ignored...\'');            
-      // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
-      var newJSON = tropo_webapi.TropoJSON(tropo);
-      newJSON = newJSON.replace(/{newline}/g, '\\n');
-      console.log(newJSON);
-      return res.end(newJSON);        
+      return that.tropoError(res, 'Ignoring inbound to unexpected number: '+toNum);
     }
   }
 

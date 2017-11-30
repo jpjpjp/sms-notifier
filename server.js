@@ -143,8 +143,8 @@ app.get('/callback', function (req, res) {
  */
 
  // Provide the list of members to the client
-app.get('/getMembers', jwtCheck, function (req, res) {
-  memberList.updateMemberListFromDb(function (err, list) {
+app.get('/getMemberList', jwtCheck, function (req, res) {
+  memberList.getMemberList(function (err, list) {
     if (err) {
       console.error(err.message);
       res.status(500).send(err.message);
