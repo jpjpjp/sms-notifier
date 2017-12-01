@@ -33,16 +33,15 @@ class TropoConnector {
     this.memberList = memberList;
   }
 
-
  
-  /**
-     * This method is called by our server when the user hits Send on the webform
-     *
-     * @function processSendRequest
-     * @param {object} req - Body of original HTTP request from the client
-     * @param {object} res - Response object that this method should use
-     */
-  processSendRequest(req, res, myWebhookData) {
+/**
+   * This method is called by our server when the user hits Send on the webform
+   *
+   * @function processSendRequest
+   * @param {object} req - Body of original HTTP request from the client
+   * @param {object} res - Response object that this method should use
+   */
+  processSendRequest(req, res) {
     if ((!req.body) || (!req.body.message) || (!req.body.numbers)) {
       res.send(422, 'Missing required form data');
       return;
@@ -54,8 +53,6 @@ class TropoConnector {
       tropoUri += '&isAdmin='+ encodeURIComponent(req.body.isAdmin);      
       tropoUri += '&adminState='+ encodeURIComponent(req.body.adminState);
     }
-    
-    //res.writeHead(200, {'content-type': 'text/plain'});
 
     // Post the URI to a Tropo app to trigger the SMS
     console.log('Final URI %s\n', tropoUri);
@@ -65,23 +62,27 @@ class TropoConnector {
       headers: {'Accept': 'application/json'}
     };
 
-    // Clear an existing (or create a new) Tropo Webhook Data object for this session
-    // Once we have it we'll callback into Tropo
-    myWebhookData.getWebhookDataForNewTropoSession(req.sessionID)
-    //myWebhookData.getWebhookDataForNewTropoSession(1)
-    .then(function (webhookData) {
-      request.get(options, tropoCallbackWithHttpResponse(res, webhookData));
-      console.log('Sent request to Tropo and will show user request in browser.');      
-    })
-    .catch(function (err) {
-      console.log('Failed to find/create webhook data object for this Tropo request: '+err.message);
-      res.writeHead(200, {'content-type': 'text/html'});
-      res.write('<html><body>Unable to create Webhook Data object for Tropo request:<br>');
-      res.write(err.message);
-      res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>');
-    });
+    request.get(options, this.tropoCallbackWithHttpResponse(res));
+    console.log('Sent request to Tropo and will show user request in browser.');      
   }
 
+  /**
+   * This is handler for the response from Tropo after we made an outbound request
+   * We take the Tropo Response and forward it back to the orignating requestor to the 
+   * /sendMessages API
+   *
+   * @function tropoCallbackWithHttpResponse
+   * @param {object} res - Response object from Tropo
+  */
+  tropoCallbackWithHttpResponse(res) {
+    return function(error, tropoResponse) {
+      if(error) {
+        console.error('Got an error back from tropo: '+error.message);
+        return res.status(500).send(error.message);
+      }
+      res.status(tropoResponse.statusCode).send(tropoResponse.statusMessage);
+    };
+  }
 
   /**
      * This method is called by our server when Tropo calls the initial URI for our smsNotifier app
@@ -275,57 +276,6 @@ class TropoConnector {
     return res.end(tropo_webapi.TropoJSON(tropo));
   }
 }
-
-/*
-   * This is handler for the response from Tropo after we made an outbound request
-   * We take the Tropo Response and forward it back to the orignating requestor to the 
-   * /sendMessages API
-   *
-   * @function tropoCallbackWithHttpResponse
-   * @param {object} res - Response object from Tropo
-   * @param {object} webhookData - TODO document what this does
-*/
-function tropoCallbackWithHttpResponse(res, webhookData) {
-  return tropoCallback = function(error, resp, body) {
-    var tropoError = '';
-    if(error) {
-      tropoError = error;
-    }
-    //Check for any unexpected status codes
-    if(resp.statusCode !== 200){
-      tropoError='Invalid Status Code Returned:' + resp.statusCode + ' : ' + resp.text;
-    }
-    if (tropoError){
-      res.writeHead(200, {'content-type': 'text/html'});
-      res.write('<html><body>');
-      res.write(tropoError);
-      res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>'); 
-      return;     
-    }
-    var response = JSON.parse(body);
-
-    // Set the Tropo session ID in the webhook Data object
-    // TODO Handle an undefined id
-    webhookData.tropoSessionId = response.id;
-    // TODO set a timer to expire the webhook data element in the array after an hour
-
-    // Send the response back to the HTTP client
-    /*
-		console.log('Displaying the Tropo response...');
-		res.writeHead(200, {'content-type': 'text/html'});
-		res.write('<html><body>Tropo Replied:<br>');
-		res.write('<textarea rows=\'10\' cols=\'80\' style=\'border:none;\'>');
-		res.write(body);
-		res.write('</textarea>');
-    if (('undefined' != typeof(response.success)) && (true === response.success)) {
-      res.write('<br/><a href=\'/showEvents\?sessionId='+response.id+''>Display CDR and/or SMS Delivery Reports</a></body></html>');
-    }
-    res.end('<br/><a href=\'/\'>Return to form to Try again</a></body></html>');
-    */
-    res.send(200);
-  };
-}
-
   
  
 module.exports = TropoConnector;

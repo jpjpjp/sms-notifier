@@ -236,12 +236,12 @@ class MemberList {
     if (mConfig.collection) {
       mConfig.collection.deleteOne({_id: newMember._id}, function(err, res) {
         if (err) {
-          return cb(null, {status: 500, message: e.message});          
+          return cb(null, {status: 500, message: err.message});          
         }
-        console.log('deleteOne returned:');
-        console.log(res);
-        return cb(null, {status: 200, 
-          message: 'Member deleted succesfully.'});
+        if (res.deletedCount === 0) {
+          return cb(null, {status: 400, message: 'Item does not exist in DB.'});            
+        } 
+        return cb(null, {status: 200, message: 'Member deleted succesfully.'});
       });
     } else {
       return cb(null, {status: 200, message: 'Database not avaialble'});

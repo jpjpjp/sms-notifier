@@ -69,17 +69,11 @@ var memberList = new MemberList(function (err, msg) {
   }
 });
 
-
-
-// This module manages an array of webhhook data object for each active session
-var AllWebhookData = require('./tropo-webhook-data.js');
-var myWebhookData = new AllWebhookData();
-//var m = require('moment-timezone');
-
 // Set Express Routes and fire up the server
 // We need the cookie-parser and express-session in order to get
 // a unique session ID per browser instance
 //var cookieParser = require('cookie-parser');
+/*
 var session = require('express-session');
 //app.use(cookieParser());
 app.use(session({
@@ -87,6 +81,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+*/
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
@@ -261,7 +256,7 @@ app.post('/deleteMember', jwtCheck, function (req, res) {
  * These routes are all secured by checking with an access token
 */
 app.post('/sendMessage', jwtCheck, function (req, res) {
-  cPaasConnector.processSendRequest(req, res, myWebhookData);
+  cPaasConnector.processSendRequest(req, res);
   //TODO implement a mechanism to timeout if we never hear back from the cPaaS
 });
 
@@ -295,123 +290,6 @@ app.post('/initialCPaaSUrl', function (req, res) {
   cPaasConnector.processInitialCallback(req, res);
 });
 
-/*
-// TODO remove this when I figure out my auth strategy...its not this
-// This function checks if the user is a Tropo employee
-function checkUserRoles(req, res, roles) {
-    req.session.papiLoginCompleted = false;
-    var msg = ' <br><a href=\'./\'>Try Again?</a>';
-    if ((!roles) || (roles.length <= 0)) {
-      msg = 'Tropo account does not belong to an employee.<br>' +
-        'Contact Support if you believe this is incorrect.' + msg;
-      console.log(msg);
-      return res.send(msg);
-    } else {
-      var found = false;
-      for (var i=0; i<roles.length; i++) {
-        role= roles[i];
-        if (role.roleName == 'EMPLOYEE') {found=true; break;}
-      }
-      if (found) {
-        req.session.papiLoginCompleted = true;
-        displayForm(res);
-      } else {
-        msg = 'Tropo account does not belong to an employee.<br>' +
-          'Contact Support if you believe this is incorrect.' + msg;
-        console.log(msg);
-        return res.send(msg);
-      }
-    }
-}
-*/
-
-/* I may need this when I register my webhooks
-// TODO Update webhook handler to write data to member db
-app.post('/tropoWebhooks', function (req, res) {
-  var payload = req.body;
-  console.log('Webhook fired:');
-  console.log(payload);
-  if (('undefined' == typeof(payload.data)) || ('undefined' == typeof(payload.event))) {
-    console.log('No data in webhook receiver');
-    res.sendStatus(200);
-    return;
-  } 
-
-  if ('undefined' != typeof(payload.data.sessionId)) {  
-    myWebhookData.getWebhookDataForTropoSession(payload.data.sessionId)
-      .then(function (webhookData) {
-        if (payload.event === 'smsdlr') {
-          webhookData.smsDeliveryReceipt = payload;
-          webhookData.smsDeliveryTime = m.utc();
-        } else if (payload.event === 'cdrCreated') {
-          webhookData.cdrCreatedData = payload;
-          webhookData.cdrRatedTime= m.utc();
-        } else if (payload.event === 'ratedCdr') {
-          webhookData.cdrRatedData = payload;
-          webhookData.cdrCreatedTime = m.utc();
-        } else {
-          console.log('Got an unexpected webhook event: ' + payload.event);
-        }
-      })
-      .catch(function(err){
-        console.log('Failed getting Tropo Webhook Data Object:'+err.message);
-      });
-  } else {
-    console.log('No id in webhook data.');
-  }
-  res.sendStatus(200);
-});
-
-/*
-//TODO figure out if I even care about this anymore....
-// I'd delete it but I'm not sure who calls it.
-app.get('/showEvents', function (req, res) {
-  console.log('Displaying the events...');
-  var sessionId = req.query.sessionId;
-  // Get the webhook data object associated with this Tropo Session ID
-  myWebhookData.getWebhookDataForTropoSession(sessionId)
-  .then(function (webhookData) {
-    webhookData.lastViewTime = m.utc();
-    res.writeHead(200, {'content-type': 'text/html'});
-    res.write('<html><body>')
-    res.write('<script>\nif (!sessionStorage.getItem(\'timezone\')) {var tz = jstz.determine() || \'UTC\'; sessionStorage.setItem(\'timezone\', tz.name());} </script>');
-    res.write('<H2>Webhook Data As Of: '+ webhookData.lastViewTime.format('hh:mm:ss')+' UTC</H2>')
-    if (webhookData.cdrCreatedTime) {
-      res.write('<H4>Unrated CDR Event Received: '+ webhookData.cdrCreatedTime.format('hh:mm:ss')+' UTC</H4><br>');
-      res.write('<textarea rows=\'10\' cols=\'80\' style=\'border:none;\'>');
-      res.write(JSON.stringify(webhookData.cdrCreatedData));
-      res.write('</textarea>');
-    } else {
-      res.write('<H4>No Unrated CDR Event Received Yet.</H4><br>');      
-    }
-    if (webhookData.cdrRatedTime) {
-      res.write('<H4>Rated CDR Event Received: '+webhookData.cdrRatedTime.format('hh:mm:ss')+' UTC</H4><br>');
-      res.write('<textarea rows=\'10\' cols=\'80\' style=\'border:none;\'>');
-      res.write(JSON.stringify(webhookData.cdrRatedData));
-      res.write('</textarea>');
-    } else {
-      res.write('<H4>No Rated CDR Event Received Yet.</H4><br>');      
-    }
-    if (webhookData.smsDeliveryTime) {
-      res.write('<H4>SMS Delivery Receipt Received: '+webhookData.smsDeliveryTime.format('hh:mm:ss')+' UTC</H4><br>');
-      res.write('<textarea rows=\'10\' cols=\'80\' style=\'border:none;\'>');
-      res.write(JSON.stringify(webhookData.smsDeliveryReceipt, null, 4));
-      res.write('</textarea>');
-    } else {
-      res.write('<H4>No SMS Delivery Receipt Event Received Yet.</H4><br>');      
-    }
-    res.write('<p><a href=\'/showEvents\?sessionId='+sessionId+'>Refresh View of Event Data</a></body></html>');
-    res.end('<p><a href=\'/\'>Return to form to Try again</a></body></html>');
-  })
-  .catch(function (err) {
-    console.log('Failed to find/create webhook data object for this Tropo request...');
-    res.writeHead(200, {'content-type': 'text/html'});
-    res.write('<html><body>Failed to find/create webhook data object for this Tropo request. Your session may have timed out.<br>');
-    res.write(err.message);
-    res.end('<p><a href=\'/\'>Return to form to Try again</a></body></html>');
-  });
-});
-*/
 
 // Helper function for getting a E.164 ID from a user entered number
 function idFromNumber(number) {
