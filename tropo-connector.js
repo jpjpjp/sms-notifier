@@ -143,16 +143,15 @@ class TropoConnector {
       }
       // Build JSON to ask Tropo to perform request
       var out_num_array = out_num.split(',');
-      out_num = out_num_array.pop();
-      while (out_num) {
-        //to, answerOnMedia, channel, from, headers, name, network, recording, required, timeout
-        //tropo.call(out_num, null, null, null, null, null, out_network, null, null, 120);
-        //tropo.say(out_msg);
-        //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-        console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
-        tropo.message(out_msg, out_num, null, 'TEXT', fromNum, null, network, null, 120, null);
-        //tropo.hangup();
-        out_num = out_num_array.pop();
+      for (let i=0; i<out_num_array.length; i++) {
+        let numOut = out_num_array[i];
+        if (numOut.length >= 9) { //work around issue where we sometimes get blank number
+          //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+          console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
+          tropo.message(out_msg, numOut, null, 'TEXT', fromNum, null, network, null, 120, null);
+        } else {
+          console.error('Got a request to send a text to an invalid number:'+numOut);
+        }
       }
       // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
       var newJSON = tropo_webapi.TropoJSON(tropo);
@@ -231,7 +230,7 @@ class TropoConnector {
       // Check if this is a message to the admin number
       // Check if this is a BROADCAST request from an admin
       // Send it to the list -- for now this is the ONLY functionality available
-      that.memberList.getMember(function(err, memberList) {
+      that.memberList.getMemberList(function(err, memberList) {
         if ((err)|| (!memberList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
         let msg = incomingMsg.replace(/\n\n/g, '{newline}');
         msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
