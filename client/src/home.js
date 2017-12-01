@@ -92,7 +92,7 @@ class Home extends Component {
         }
         users.push(row);
         let numbers = this.state.numbers;
-        numbers.push(row.numbers);
+        numbers.push(row.number);
         let selected = this.state.selected;
         selected.push(row._id);
         this.setState({ users: users, numbers: numbers, selected: selected });  
