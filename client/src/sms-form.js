@@ -33,7 +33,7 @@ class SMSForm extends React.Component {
   }
 
   handleSubmit(event) {
-    alert('Will try to send Message: ' + this.state.message);
+    //alert('Will try to send Message: ' + this.state.message);
     let numbers = this.getNumbers();
     let numberString = numbers.join(',');
     let that = this;
