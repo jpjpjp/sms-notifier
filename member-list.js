@@ -146,9 +146,6 @@ class MemberList {
       if (err) {
         return cb(null, {status: 500, message: err.message});
       } else {
-        // Perhaps can inspect result object for non OK conditions...
-        console.log('insertOne returned:');
-        console.log(res);
         return cb(null, {status: 200, 
           message: 'Added member succesfully.'});
       }

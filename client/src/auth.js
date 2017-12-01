@@ -61,6 +61,14 @@ export default class Auth {
     history.replace('/home');
   }
 
+  isSessionExpired(statusCode) {
+    if (statusCode === 401) {
+      this.logout();
+      return true;
+    }
+    return false;
+  }
+
   logout() {
     // Clear access token and ID token from local storage
     localStorage.removeItem('access_token');

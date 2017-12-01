@@ -18,7 +18,7 @@ class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {users: [], numbers: [], selected: [], 
-      dbInitiatalized: false, dbConnected: false};
+      dbInitiatalized: false, dbConnected: false, sessionExpired: false};
   }
 
   login() {
@@ -43,7 +43,10 @@ class Home extends Component {
         if (res.status === 200) {
           return res.json();
         } else {
-          if (res.message) {throw(new Error(res.message));}
+          if (this.props.auth.isSessionExpired(res.status)) {
+            return this.expireSession();
+          }
+          if (res.statusMessage) {throw(new Error(res.statusMessage));}
           throw(new Error('Member lookup returned: ' + res.status));
         }
       })
@@ -87,8 +90,15 @@ class Home extends Component {
     })
       .then(res => {
         if (res.status !== 200) {
+          if (this.props.auth.isSessionExpired(res.status)) {
+            this.setState({sessionExpired: true});
+            return;
+          }
           // How do I delete this bad boy?
           return alert('Writing to DB failed: ' + res.status);
+        }
+        if (this.props.auth.isSessionExpired(401)) {
+          return this.expireSession();
         }
         users.push(row);
         let numbers = this.state.numbers;
@@ -139,6 +149,9 @@ class Home extends Component {
     })
       .then(res => {
         if (res.status !== 200) {
+          if (this.props.auth.isSessionExpired(res.status)) {
+            return this.expireSession();
+          }
           alert('Admin Message failed to send.  Status: ' + res.status);
         }
       })    
@@ -166,6 +179,9 @@ class Home extends Component {
     })
       .then(res => {
         if (res.status !== 200) {
+          if (this.props.auth.isSessionExpired(res.status)) {
+            return this.expireSession();
+          }
           // How do I delete this bad boy?
           return alert('Writing to DB failed: ' + res.status);
         }
@@ -199,6 +215,10 @@ class Home extends Component {
     })
       .then(res => {
         if (res.status !== 200) {
+          if (this.props.auth.isSessionExpired(res.status)) {
+            this.setState({sessionExpired: true});
+            return;
+          }
           // How do I delete this bad boy?
           return alert('Removing member from DB failed: ' + res.status);
         }
@@ -254,15 +274,24 @@ class Home extends Component {
     return this.state.numbers;
   }
 
+  expireSession = () => {
+    this.setState({sessionExpired: true});
+  }
+
   render() {
-    const { isAuthenticated } = this.props.auth;   
+    const { isAuthenticated } = this.props.auth; 
+    const loginMessage = (this.state.sessionExpired) ? 'Your session has expired.' :'You are not logged in.';  
     return (
       <div className='App'>
         {
           isAuthenticated() && (
             <div className='Message Form'>
               <div className='SMS-Form'>
-                <SMSForm getNumbers={this.getNumbers}/>
+                <SMSForm 
+                  auth={this.props.auth}
+                  getNumbers={this.getNumbers} 
+                  expireSession={this.expireSession}
+                />
               </div>
               <div className='Member-Table'>
                 <MemberTable 
@@ -284,14 +313,14 @@ class Home extends Component {
         {
           !isAuthenticated() && (
             <h4>
-                You are not logged in! Please{' '}
+              {loginMessage} Please{' '}
               <a
                 style={{ cursor: 'pointer' }}
                 onClick={this.login.bind(this)}
               >
                 Log In
               </a>
-              {' '}to continue.
+              {(this.state.sessionExpired) ? ' again ' : ' '}to continue.
             </h4>
           )
         }

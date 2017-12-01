@@ -53,8 +53,11 @@ class SMSForm extends React.Component {
     })
       .then(res => {
         if (res.status === 200) {
-          alert('Message sent succesfully');
+          console.log('Message sent succesfully');
         } else {
+          if (this.props.auth.isSessionExpired(res.status)) {
+            return this.props.expireSession();
+          }
           alert('Messages failed to send.  Status: ' + res.status);
         }
         that.setState({isSending:false, message: ''});
