@@ -234,14 +234,14 @@ class MemberList {
           else return console.error(err.message);
         }
         if ((!res) || (!res.result) || (res.result.nModified != 1)) {
-          msg = 'Did not increment counts for message sent to '+ number;
+          let msg = 'Did not increment counts for message sent to '+ number;
           if (cb) return cb(new Error(msg));
           else return console.error(msg);
         }
         if (cb) cb(null, res);
       });
     } else {
-      msg = 'Increment Counts failed becasue DB is not available';
+      let msg = 'Increment Counts failed becasue DB is not available';
       if (cb) cb(new Error(msg));
       else console.error(msg);
     }

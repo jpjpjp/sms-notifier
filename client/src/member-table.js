@@ -1,5 +1,6 @@
 import React from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import { Button } from 'react-bootstrap';
+import { BootstrapTable, TableHeaderColumn, ButtonGroup } from 'react-bootstrap-table';
 require('./member-table.css');
 require('react-bootstrap-table/dist/react-bootstrap-table-all.min.css');
 
@@ -10,6 +11,7 @@ const MemberHeader = () => (
   By default all members who haven't explicitly opted out of Text Notifications are checked, but you can modify the recipients for your mesage before hitting the send button.
   </div>
 );
+
 
 function onAfterSaveCell(row, cellName, cellValue) {
   alert(`Save cell ${cellName} with value ${cellValue}`);
@@ -63,24 +65,6 @@ function onBeforeNewUser(row, colInfo, errorCb) {
   cellEditProp.onInsertRow(row);
 }
 
-/*
-function onBeforeSaveCellAsync(row, cellName, cellValue, done) {
-  // if your validation is async, for example: you want to pop a confirm dialog for user to confim
-  // in this case, react-bootstrap-table pass a callback function to you
-  // you are supposed to call this callback function with a bool value to perfom if it is valid or not
-  // in addition, you should return 1 to tell react-bootstrap-table this is a async operation.
-  // alert(`Before Save cell ${cellName} with value ${cellValue}`);
-
-  // I use setTimeout to perform an async operation.
-  setTimeout(() => {
-  //   done(true);  // it's ok to save :)
-    alert(`Won't save it`);
-    done(false);   // it's not ok to save :(
-  }, 3000);
-  return 1;  // please return 1
-}
-*/
-
 let cellEditProp = {
   mode: 'click',
   blurToSave: true,
@@ -88,13 +72,13 @@ let cellEditProp = {
   afterSaveCell: onAfterSaveCell  // a hook for after saving cell
 };
 
-
 class MemberTable extends React.Component {
   constructor(props) {
     super(props);
     cellEditProp.afterSaveCell = props.dataUpdateCallback;
     cellEditProp.onDeleteUser = props.handleDeleteUser;
     cellEditProp.onInsertRow = props.handleNewUser;
+    cellEditProp.onRefreshData = props.handleRefreshData; 
   }
 
   onClickDeleteMember(cell, row, rowIndex){
@@ -112,6 +96,28 @@ class MemberTable extends React.Component {
       </button>
     );
   }
+
+  onRefreshData(){
+    cellEditProp.onRefreshData();
+  }
+
+  // We create a custom button group to add our "Refresh Data Button"
+  createCustomButtonGroup = props => {
+    return (
+      <ButtonGroup className='my-custom-class' sizeClass='btn-group-md'>
+        { props.exportCSVBtn }
+        { props.insertBtn }
+        { props.showSelectedOnlyBtn }
+        { props.deleteBtn }
+        <Button 
+          bsStyle="success"
+          onClick={this.onRefreshData}>
+            Refresh Sent/Failed Counts
+        </Button>
+      </ButtonGroup>
+    );
+  }
+
 
   render() {
     if (!this.props.dbInitiatalized) {
@@ -133,9 +139,8 @@ class MemberTable extends React.Component {
     };
 
     const tableOptions = {
-      //onAddRow: this.validateNewUser,
-      onAddRow: onBeforeNewUser,
-      afterInsertRow: cellEditProp.onInsertRow
+      // Use our custom button group
+      btnGroup: this.createCustomButtonGroup
     };
 
     return (
@@ -154,7 +159,7 @@ class MemberTable extends React.Component {
           <TableHeaderColumn dataField='firstName' dataSort={ true }>First Name</TableHeaderColumn>
           <TableHeaderColumn dataField='lastName' dataSort={ true }>Last Name</TableHeaderColumn>
           <TableHeaderColumn dataField='email' dataSort={ true }>Email</TableHeaderColumn>
-          <TableHeaderColumn dataField='isAdmin' editable={ { type: 'checkbox', options: { values: 'true:false' } } }>Admin</TableHeaderColumn>          
+          <TableHeaderColumn dataField='isAdmin' dataSort={ true } editable={ { type: 'checkbox', options: { values: 'true:false' } } }>Admin</TableHeaderColumn>          
           <TableHeaderColumn dataField='optOut'  dataFormat={supportedFormatter} dataSort={ true } hiddenOnInsert editable={ false } width='8%'>OptOut</TableHeaderColumn>
           <TableHeaderColumn dataField='confirmedSent' dataSort={ true } hiddenOnInsert editable={ false } width='8%'># Sent </TableHeaderColumn>
           <TableHeaderColumn dataField='confirmedFailed' dataSort={ true } hiddenOnInsert editable={ false } width='8%'># Failed</TableHeaderColumn>

@@ -29,6 +29,10 @@ class Home extends Component {
   }
 
   componentDidMount(){
+    this.onRefreshData();
+  }
+
+  onRefreshData = () => {
     fetch('/getMemberList', {
       method: 'get',
       mode: 'cors', 
@@ -305,6 +309,7 @@ class Home extends Component {
                   handleSelectAllCallback={this.onFormSelectAll}
                   handleNewUser={this.onNewUser}
                   handleDeleteUser={this.onDeleteUser}
+                  handleRefreshData={this.onRefreshData}
                 />
               </div>
             </div>
