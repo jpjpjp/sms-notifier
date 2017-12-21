@@ -97,9 +97,11 @@ app.use(function(req, res, next) {
 });
 
 // Express only serves static assets in production
-if (process.env.DEV_MODE === 'production') {
+if ((process.env.NODE_ENV === 'production') || (process.env.DEV_MODE === 'production')) {
   console.log('Running in production mode with static client assets.');
   app.use(express.static('client/build'));
+} else {
+  res.send('I\'m alive.');
 }
 
 // The server gets started in the callbacks from the support module constructors
