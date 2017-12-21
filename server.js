@@ -97,7 +97,7 @@ app.use(function(req, res, next) {
 });
 
 // Express only serves static assets in production
-if (process.env.NODE_ENV === 'production') {
+if (process.env.DEV_MODE === 'production') {
   console.log('Running in production mode with static client assets.');
   app.use(express.static('client/build'));
 }
@@ -276,7 +276,7 @@ app.post('/sendMessage', jwtCheck, function (req, res) {
    * This is the URL that a cPaaS provider calls back to in response to a request
    * In the case of Tropo, the response is typically to ask (again) for the message to be sent
    * 
-   * It expects an app%lication/json payload that provides the details of
+   * It expects an application/json payload that provides the details of
    * the message to send and the numbers to send it to
    * 
    * In the case of Tropo, the platform takes these as request parameters from the
@@ -288,6 +288,17 @@ app.post('/sendMessage', jwtCheck, function (req, res) {
 */
 app.post('/initialCPaaSUrl', function (req, res) {
   cPaasConnector.processInitialCallback(req, res);
+});
+
+
+/*
+   * This is the URL that a cPaaS provider calls to provide SMS Delivery receipts
+   * In the case of Tropo, the response is generally ignored
+   * 
+   * It expects an application/json payload that provides the Delivery Info
+*/
+app.post('/smsDeliveryReceiptHandler', function (req, res) {
+  cPaasConnector.processSmsDlr(req, res);
 });
 
 

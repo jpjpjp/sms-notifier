@@ -216,6 +216,38 @@ class MemberList {
   }
 
   /**
+   * Increments the sent and (optionally failed) counters
+   *
+   * @function incrementMemberMessageCounts
+   * @param {int} number - toNumber we index on
+   * @param {boolean} setFailed -- if true we increment the failed count
+   * @param {callback} - optional callback when counts are incremente
+   * @returns {object} -- an object with an appropriate http response code and message
+   * 
+   */
+  incrementMemberMessageCounts(number, setFailed, cb) {
+    if (mConfig.collection) {
+      let failedIncrement = (setFailed) ? 1 : 0;
+      mConfig.collection.update({_id: number}, {$inc: {confirmedSent: 1, confirmedFailed: failedIncrement}}, function (err, res) {
+        if (err){
+          if (cb) return cb(err);
+          else return console.error(err.message);
+        }
+        if ((!res) || (!res.result) || (res.result.nModified != 1)) {
+          msg = 'Did not increment counts for message sent to '+ number;
+          if (cb) return cb(new Error(msg));
+          else return console.error(msg);
+        }
+        if (cb) cb(null, res);
+      });
+    } else {
+      msg = 'Increment Counts failed becasue DB is not available';
+      if (cb) cb(new Error(msg));
+      else console.error(msg);
+    }
+  }
+
+  /**
    * Deletes a member from our list
    *
    * @function deleteMember

@@ -156,8 +156,8 @@ class MemberTable extends React.Component {
           <TableHeaderColumn dataField='email' dataSort={ true }>Email</TableHeaderColumn>
           <TableHeaderColumn dataField='isAdmin' editable={ { type: 'checkbox', options: { values: 'true:false' } } }>Admin</TableHeaderColumn>          
           <TableHeaderColumn dataField='optOut'  dataFormat={supportedFormatter} dataSort={ true } hiddenOnInsert editable={ false } width='8%'>OptOut</TableHeaderColumn>
-          <TableHeaderColumn dataField='confirmedSent' hidden dataSort={ true } hiddenOnInsert editable={ false } width='8%'>Arrived </TableHeaderColumn>
-          <TableHeaderColumn dataField='confirmedFailed' hidden dataSort={ true } hiddenOnInsert editable={ false } width='8%'>Failed</TableHeaderColumn>
+          <TableHeaderColumn dataField='confirmedSent' dataSort={ true } hiddenOnInsert editable={ false } width='8%'># Sent </TableHeaderColumn>
+          <TableHeaderColumn dataField='confirmedFailed' dataSort={ true } hiddenOnInsert editable={ false } width='8%'># Failed</TableHeaderColumn>
           <TableHeaderColumn dataField='button' dataFormat={ this.deleteUserButton.bind(this) } hiddenOnInsert editable={ false } export={ false }>Action</TableHeaderColumn>
         </BootstrapTable>
       </div>

@@ -10,6 +10,20 @@
       "protocol": "inspector",
       "name": "Launch Program",
       "program": "${workspaceFolder}/server.js"
+      /*
+       * Used to debug the Troo setup script
+      "program": "${workspaceFolder}/scripts/setup-tropo.js",
+      "args": [
+        "-t", "jpshipherd", "-p", "TropoCisco4jp", "-n", "AbrNotifierDev", "-u", "https://abrnotifier.ngrok.io", "-a", "518"
+      ]
+      */
+      /*
+       * Used to debug the Troo Webhooks setup script
+      "program": "${workspaceFolder}/scripts/setup-tropo-webhooks.js",
+      "args": [
+        "-t", "jpshipherd", "-p", "TropoCisco4jp", "-a", "5174177", "-u", "https://abrnotifier.ngrok.io"
+    ]
+      */
     }
   ]
 }

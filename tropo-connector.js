@@ -259,6 +259,31 @@ class TropoConnector {
     }
   }
 
+  /**
+   * This method is called by our server when Tropo sends and SMS Delivery receipt
+   *
+   * @function processSmsDlr
+   * @param {object} req - Body of original HTTP request from Tropo
+   * @param {object} res - Response object that this method should use
+   */
+  processSmsDlr(req, res) {
+    var reqJson=req.body;
+    try {
+      let toNumber = reqJson.data.to;
+      if (toNumber[0] == '+') toNumber = toNumber.substr(1);
+      let status = reqJson.data.stat;
+      console.log('Delivery Receipt for message to: ' +toNumber+' has status: '+status);
+      if ((status === 'Accepted') || (status === 'Delivered') || (status === 'Sent')) {
+        this.memberList.incrementMemberMessageCounts(toNumber, /*setFailed=*/false);
+      } else {
+        this.memberList.incrementMemberMessageCounts(toNumber, /*setFailed=*/true);        
+      }
+    } catch(e) {
+      console.error('Error processing SMS Delivery Receipt: '+e.message);   
+    } 
+    res.send('OK');
+  }
+
 
 
   /**
