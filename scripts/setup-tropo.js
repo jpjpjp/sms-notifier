@@ -67,10 +67,20 @@ let tokenBody = {
   'channel': 'messaging'
 };
 
-// Configure the payload to ge the numbers
+// Configure the payload to get the numbers
 let numberBody = {
   'type': 'number',
   'prefix': myArgs.prefix
+};
+
+// Configure the payload to register the webhook for SMS Delivery Receipts
+let smsDlrBody = {
+  'event': 'smsdlr',
+  'name': 'SMS Notifier Delivery Receipt Handler',
+  'targetUrl': myArgs.url + 'smsDeliveryReceiptHandler',
+  'resource': 'sms',
+  'payload': {'webhookSecret': 'This could have stronger security!'},
+  'enabled': true
 };
 
 
@@ -109,11 +119,20 @@ callPapi(request, papiOptions)  // First check if there are numbers for the requ
   console.log('Got the admin phone number for App: '+myArgs.tropoAppName+'...Setup Complete.');
   tropoInfo.adminNumber = number2.href.substr(number2.href.lastIndexOf('/')+1);
   if (tropoInfo.adminNumber[0] === '+') {tropoInfo.adminNumber = tropoInfo.adminNumber.substr(1);}
+  papiOptions.url = tropoUrl + 'applications/' + tropoInfo.appId + '/webhooks';
+  papiOptions.body = JSON.stringify(smsDlrBody);
+  return callPapi(request, papiOptions); //Finally configure our SMS DLR webhook
+})
+.then(response => {
+  console.log('SMS Delivery Receipts will be sent to '+myArgs.url + 'smsDeliveryReceiptHandler');
+  console.log('Send a DELETE to this url to turn this off: '+response.href);
+  console.log('Setup Complete.');
   console.log('');
-  console.log('You need to set the following environment variables when you run your app:');
+  console.log('Tropo is now configured. Before starting your server, you need to set the following environment variables:');
   console.log('TROPO_API_KEY = "'+tropoInfo.token+'"');
   console.log('TROPO_PUBLIC_NUMBER = "'+tropoInfo.publicNumber+'"');
-  console.log('TROPO_PUBLIC_NUMBER = "'+tropoInfo.adminNumber+'"');
+  console.log('TROPO_ADMIN_NUMBER = "'+tropoInfo.adminNumber+'"');
+  console.log('');
 })
 .catch(err => {
   // TODO clean up a half set up app
