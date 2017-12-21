@@ -13,8 +13,11 @@
 /* eslint-disable no-console */
 
 // Tropo and Mongo modules read config from environment
-const dotenv = require('dotenv');
-dotenv.load();
+if (process.env.NODE_ENV !== 'production') {
+  // We use a .env file in our dev environment
+  const dotenv = require('dotenv');
+  dotenv.load();
+}
 
 
 // Express Setup
