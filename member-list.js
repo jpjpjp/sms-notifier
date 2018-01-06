@@ -88,7 +88,7 @@ class MemberList {
    */
   getAdminList(cb) {    
     if (mConfig.collection) {
-      mConfig.collection.find({'isAdmin': 'true'}).toArray(function (err, list) {
+      mConfig.collection.find({'isAdmin': true}).toArray(function (err, list) {
         if (err) {
           return cb(err);
         } else {
