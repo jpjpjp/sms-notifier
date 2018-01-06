@@ -151,30 +151,6 @@ callPapi(request, papiOptions)  // First check if there are numbers for the requ
 
 
 
-/* Helper method to call PAPI and return a promise */
-function callPapi(request, options) {
-	// Call the PAPI lookup method.
-  return new Promise(function (resolve, reject) {
-    request(options, function(err, res) {
-      //Check for any unexpected status codes
-      if (err) {return reject(err);}
-    	if(res.statusCode !== 200) {
-        let errMessage = 'Invalid Status Code Returned:'+ res.statusCode;
-    	  console.log(errMessage);
-        return reject(new Error(errMessage));
-      }
-    	// If we got here, we have a good 200 OK Response
-      // TODO handle pagination
-    	try {
-        let data = JSON.parse(res.body);
-        resolve(data);
-    	} catch (e) {
-        reject(err);
-    	}
-    });
-  });
-}
-
 
 function parseCmdLineArgs(myArgs) {
   var getUsage = require('command-line-usage');
