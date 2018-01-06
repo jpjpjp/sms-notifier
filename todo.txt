@@ -1,19 +1,16 @@
 -- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
 -- Break out the webhook specific code so that twilio or another service could do the message
--- create a readme at the top.   This could link to the client and server readmes
+-- Make sure the readme is semi-useful
 -- Make ABR stuff (logo, name) work with environment variables
--- Set up webhooks, update received send counts in database
 -- Set up websockets, dynamically update the table data based on backend changes
--- Store admin numbers in DB if an admin sends a message to our number it will broadcast to the default distribution list
 -- Warn if user tries to activate someone who has opted out.
 -- Keep a store of sent messages in the database
--- Add export to csv of membershp list
+-- Add export/import to/from csv of membershp list
 -- Add a view of past messages (message, initiator username, recipient numbers)
--- Figure out how to set up Mongo IP Whitelist for Heroku production
+-- Figure out how to set up Mongo IP Whitelist for Heroku production (maybe impossible with free version?)
 -- Allow users to cancel/edit in the dialog after send it
 -- Think about fixing race condition if user opts out but client webpage is out of sync with DB.   This will fix itself if I ever do a websocket and dynamically update the send counts
 -- Add the ablity for an admin to reply to just one user (work around is for them to do it themselves)
--- Send an SMS to a user from the Admin number if their admin status changes
 -- Add postman tests to github and make them part of the build process.
 
 Done:
@@ -29,6 +26,9 @@ Done:
 11/30/17 -- Handle opt out functionality in the inbound message responder
 11/30/17 -- Add admin functionality.  Admin gets any responses, can opt out
 12/1/17  -- Removed legacy webhook and middleware stuff from this server as we won't use it
+??? -- Set up webhooks, update received send counts in database
+??? -- Store admin numbers in DB if an admin sends a message to our number it will broadcast to the default distribution list
+???-- Send an SMS to a user from the Admin number if their admin status changes
 
 
 
