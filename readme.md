@@ -29,7 +29,11 @@ The server relies on three external services that must be set up and configured 
 Note that all mongo code is localized to <a href='./member-list.js'>member-list.js</a>.   It should be possible to create a new module to use a different database.<br>
 
 <br>
-3) **Auth0** provides the identity and authorization service.   When users navigate to our web page they are redirected to Auth0 to sign in.   Upon succesful login Auth0 provides a JWT token which is used to validate calls to the server.   A free or paid account must be set up at https://auth0.com/.   TODO-Describe configuration<br>
+3) **Auth0** provides the identity and authorization service.   When users navigate to our web page they are redirected to Auth0 to sign in.   Upon succesful login Auth0 provides a JWT token which is used to validate calls to the server.   A free or paid account must be set up at https://auth0.com/.   
+ 
+On auth0.com, create a Single Page Web Application client.   In the Quick Start, specify React as the web app technology.   On the settings tab populate the Allowed Callback URLs.  Typically this will include http://localhost:3000/callback when initially building your app and will change to the URL where your server is running when not in debug mode. https://localhost:1185/callback, https://localhost:1185/callback, https://abr-sms-tool.herokuapp.com/callback.   Save the client Settings<br>
+
+Once the client is setup, we need to set up the API that our server provides, so that when clients log into our web app, the Auth0 client will provide them with a JWT that will allow the react app to call the APIs in our server. This process is described here: https://auth0.com/docs/apis#how-to-configure-an-api-in-auth0  Briefly, in Auth0 click on the APIs menu on the left and click the "Create API" button in the upper right hand corner.  The new API needs a name and an Identifier.   This Identifier will be used to set the REACT_APP_OAUTH_AUDIENCE environment variable in the next step.   Accept the default RS256 signing algorithm.
 
 Once configured the following environment variables need to be set:
 <ul>
@@ -38,6 +42,8 @@ Once configured the following environment variables need to be set:
 <li>REACT_APP_OAUTH_CALLBACK -- provided by Auth0 durig the setup
 <li>REACT_APP_OAUTH_CLIENT_ID -- provided by Auth0 durig the setup
 </ul>
+All four of these environment variables are used by the react client code.  The REACT_APP_OAUTH_DOMAIN and the REACT_APP_OAUTH_AUDIENCE are also used by the server.  If you use the dotenv library to set environment variables make sure to set these in both the project root and the client subdirectory.
+
 Note that all auth0 code is localized to <a href='./client/src/auth.js'>auth.js</a>.   It should be possible to create a new module to use a identity provider.<br>
 
 Prior to running the applciation, the Auth0 owner needs to set up at least one user in the Auth0 system so that they can login to the sms-notifier app.
