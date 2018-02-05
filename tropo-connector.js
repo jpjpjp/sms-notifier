@@ -188,6 +188,7 @@ class TropoConnector {
     }
 
     let that = this;
+    let msg = '';
     // Check if this is a response to the user number
     if (toNum === this.tropoPublicNumber) {
       // Check if this is a STOP or RESTART request
@@ -198,7 +199,7 @@ class TropoConnector {
         that.memberList.setOptOut(fromNum, optOut, function(err, status) {
           if ((err)|| (!status)) {return that.tropoError(res, 'Cannot figure out who sent this! Ignoring');}          
           // Respond that the optout will be enforced, or is taken off
-          let msg = 'You will no longer get text notifications from Albany Bike Rescue.  Reply RESTART to get them again.';
+          msg = 'You will no longer get text notifications from Albany Bike Rescue.  Reply RESTART to get them again.';
           if (!optOut) {msg = 'You will start getting notifications from Albany Bike Resuce again.';}
           tropo.message(msg, fromNum, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
           return res.end(tropo_webapi.TropoJSON(tropo));
@@ -207,8 +208,17 @@ class TropoConnector {
         // Else send it to the admins
         // Get the details on who this was from
         that.memberList.getMember(fromNum, function(err, member){
-          if ((err)|| (!member)) {return that.tropoError(res, 'Cannot figure out who sent this!  Ignoring');}          
-          let msg = member.firstName+' '+member.lastName+' ('+member.number+') responded:{newline}'+incomingMsg;
+          if ((err)|| ((!member) && (fromNum != that.tropoAdminNumber))) {
+            // We ignore the message if it didn't come from this system or one of its memembers
+            return that.tropoError(res, 'Cannot figure out who sent this!  Ignoring');
+          } 
+          if (member) {
+            // Tell the admins who this came from...         
+            msg = member.firstName+' '+member.lastName+' ('+member.number+') responded:{newline}'+incomingMsg;
+          } else {
+            // Unless this is us responding to an admin request
+            msg = incomingMsg;
+          }
           // Fetch the admins from the member list and send to each of them.
           that.memberList.getAdminList(function (err, adminList){
             if ((err)|| (!adminList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
@@ -219,40 +229,54 @@ class TropoConnector {
               //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
               tropo.message(msg, admin.number, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
             }
-            // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
-            var newJSON = tropo_webapi.TropoJSON(tropo);
-            newJSON = newJSON.replace(/{newline}/g, '\\n');
-            console.log(newJSON);
-            return res.end(newJSON);        
+            return that.packageAndSendMessages(res, tropo);
           });
         });
       }
-    } else if (toNum === this.tropoAdminNumber) {
-      // Check if this is a message to the admin number
-      // Check if this is a BROADCAST request from an admin
-      // Send it to the list -- for now this is the ONLY functionality available
-      that.memberList.getMemberList(function(err, memberList) {
-        if ((err)|| (!memberList.length)) {return that.tropoError(res, 'No Admins to send this to.');}
-        let msg = incomingMsg.replace(/\n\n/g, '{newline}');
-        msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
-        for (let i=0; i<memberList.length; i++) {
-          let member = memberList[i];
-          //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-          if (!member.optOut) {
-            console.log('Broadcasting message:'+msg + ' to: ' + member.firstName);
-            tropo.message(msg, member.number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
-          }
+    } else if (toNum === that.tropoAdminNumber) {
+      // This is a message to the admin number so it came from an Admin
+      // Possible TODO -- validate the the from number matches one that matches admins
+      msg = incomingMsg.replace(/\n\n/g, '{newline}');
+      // Generally messages sent to the Admin number are broadcast to all members
+      // We check here to see if the special "Reply <number>"" command is used in which case
+      // the message is sent only to the requested number.  This is useful since other admins
+      // can see if a question is answered, but it still ensures that members only ever see the
+      // public number
+      if (msg.toUpperCase().startsWith('REPLY')) {
+        // Future feature:  don't FORCE the second word of the REPLY command to be a number
+        // Send it to the last number (this might be tricky if the server goes to sleep)
+        let words = msg.split(' ');
+        words.shift();  //get rid of the word "reply"
+        let number = words.shift(); // get the number to send it to?
+        let e164_number = that.idFromNumber(number);
+        if (!e164_number) {
+          // Number in reply command was invalid.  Let admin know
+          msg = 'Cannot send a text to invalid number: ' + number+ '. Try again using REPLY <NUMBER> <MESSAGE>, ie:{newline}' +
+                'Reply 518-555-1234 Hi There!{newline}{newline}No spaces allowed in number.';
+          tropo.message(msg, that.tropoPublicNumber, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
+        } else {
+          msg = words.join(' ');
+          tropo.message(msg, e164_number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+          msg = 'Message sent to: ' + number+ '.';
+          tropo.message(msg, that.tropoPublicNumber, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);          
         }
-        // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
-        var newJSON = tropo_webapi.TropoJSON(tropo);
-        newJSON = newJSON.replace(/{newline}/g, '\\n');
-        console.log(newJSON);
-        return res.end(newJSON);        
-      });
-      // Future feature:  Check if this is a REPLY request from an admin
-      // Send it to the last number (this might be tricky if the server goes to sleep)
-      // Else respond that we don't know what to do with it (remind about the broadcast command)
-
+        return that.packageAndSendMessages(res, tropo);
+      } else {
+        // Treat this is as a BROADCAST request from an admin, send it to all members
+        that.memberList.getMemberList(function(err, memberList) {
+          if ((err)|| (!memberList.length)) {return that.tropoError(res, 'Could not get the member list.');}
+          msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
+          for (let i=0; i<memberList.length; i++) {
+            let member = memberList[i];
+            //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+            if (!member.optOut) {
+              console.log('Broadcasting message:'+msg + ' to: ' + member.firstName);
+              tropo.message(msg, member.number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+            }
+          }
+          return that.packageAndSendMessages(res, tropo);
+        });
+      }
     } else {
       // Else we didn't expect a text to this number, ignore
       return that.tropoError(res, 'Ignoring inbound to unexpected number: '+toNum);
@@ -284,7 +308,21 @@ class TropoConnector {
     res.send('OK');
   }
 
-
+  /**
+   * This is a convenience method for putting newlines in a (set of) Tropo SMS messages
+   * and sending the payload back to Tropo
+   *
+   * @function packageAndSendMessages
+   * @param {object} res - Response object that this method should use
+   * @param {string} tropo- Tropo WebAPI object
+   */
+  packageAndSendMessages(res, tropo) {
+    // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
+    var newJSON = tropo_webapi.TropoJSON(tropo);
+    newJSON = newJSON.replace(/{newline}/g, '\\n');
+    console.log(newJSON);
+    return res.end(newJSON);        
+  }
 
   /**
    * This is a convenience method for responding to a Tropo request when an error occurs.
@@ -300,6 +338,17 @@ class TropoConnector {
     tropo.hangup();
     return res.end(tropo_webapi.TropoJSON(tropo));
   }
+
+  // Helper function for getting a E.164 ID from a user entered number
+  idFromNumber(number) {
+    var bare_num = number.replace(/\D/g, '');
+    if (bare_num.length === 10) {
+      return ('1'+bare_num);
+    } else if (!((bare_num.length === 11) && (bare_num[0] === '1'))) {
+      console.error('Can\'t calculate key from '+number);
+    }
+    return bare_num;
+  }  
 }
   
  
