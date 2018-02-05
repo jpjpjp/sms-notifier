@@ -35,11 +35,14 @@ var jwtCheck = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: 'https://albany-bike-resue.auth0.com/.well-known/jwks.json'
+    jwksUri: 'https://' + process.env.REACT_APP_OAUTH_DOMAIN + '/.well-known/jwks.json'
+    //jwksUri: 'https://albany-bike-rescue.auth0.com/.well-known/jwks.json' // TODO-Use environment var
   }),
-  audience: 'localhost:1185',
-  issuer: 'https://albany-bike-resue.auth0.com/',
-  algorithms: ['RS256']
+  audience: process.env.REACT_APP_OAUTH_AUDIENCE,
+  //audience: 'abr-sms-api', // TODO Use env var
+  issuer: 'https://' + process.env.REACT_APP_OAUTH_DOMAIN + '/',
+  //issuer: 'https://albany-bike-rescue.auth0.com/', // TODO Use env var
+  algorithms: ['RS256'] // TODO Use env var
 });
 
 //app.use(jwtCheck);
@@ -103,10 +106,7 @@ app.use(function(req, res, next) {
 if ((process.env.NODE_ENV === 'production') || (process.env.DEV_MODE === 'production')) {
   console.log('Running in production mode with static client assets.');
   app.use(express.static('client/build'));
-} else {
-  res.send('I\'m alive.');
 }
-
 // The server gets started in the callbacks from the support module constructors
 // See above
 
@@ -195,13 +195,13 @@ app.post('/updateMember', jwtCheck, function (req, res) {
   }
 
   // If the phone number has changed, delete the old entry and replace it
-  if (member._id != idFromNumber(member.number)) {
+  if (member._id != cPaasConnector.idFromNumber(member.number)) {
     let newNumber = member;
     memberList.deleteMember(member, function(err, dbResult) {
       if (err) {
         res.status(500).send(err.message);
       } else {
-        newNumber._id = idFromNumber(newNumber.number);
+        newNumber._id = cPaasConnector.idFromNumber(newNumber.number);
         memberList.addMember(newNumber, function(err, dbResult) {
           if (err) {
             res.status(500).send(err.message);
@@ -306,14 +306,3 @@ app.post('/smsDeliveryReceiptHandler', function (req, res) {
   cPaasConnector.processSmsDlr(req, res);
 });
 
-
-// Helper function for getting a E.164 ID from a user entered number
-function idFromNumber(number) {
-  var bare_num = number.replace(/\D/g, '');
-  if (bare_num.length === 10) {
-    return ('1'+bare_num);
-  } else if (!((bare_num.length === 11) && (bare_num[0] === '1'))) {
-    console.error('Can\'t calculate key from '+number);
-  }
-  return bare_num;
-}  
