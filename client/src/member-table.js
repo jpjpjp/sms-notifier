@@ -58,7 +58,6 @@ function onBeforeNewUser(row, colInfo, errorCb) {
   }
   row._id = idFromNumber(row.number);
   row.optOut = false;
-  row.isAdmin = false;
   row.confirmedSent = 0;
   row.confirmedFailed = 0;
 
@@ -139,6 +138,7 @@ class MemberTable extends React.Component {
     };
 
     const tableOptions = {
+      onAddRow: onBeforeNewUser,
       // Use our custom button group
       btnGroup: this.createCustomButtonGroup
     };
@@ -154,8 +154,8 @@ class MemberTable extends React.Component {
           options= { tableOptions }
           striped={true} hover={true} condensed={true} insertRow
         >
-          <TableHeaderColumn dataField='_id'  hidden hiddenOnInsert editable={ false }>Key</TableHeaderColumn>
-          <TableHeaderColumn dataField='number' isKey={ true } dataSort={ true }>Phone</TableHeaderColumn>
+          <TableHeaderColumn dataField='_id' hidden hiddenOnInsert  isKey={ true } editable={ false }>Key</TableHeaderColumn>
+          <TableHeaderColumn dataField='number' dataSort={ true }>Phone</TableHeaderColumn>
           <TableHeaderColumn dataField='firstName' dataSort={ true }>First Name</TableHeaderColumn>
           <TableHeaderColumn dataField='lastName' dataSort={ true }>Last Name</TableHeaderColumn>
           <TableHeaderColumn dataField='email' dataSort={ true }>Email</TableHeaderColumn>

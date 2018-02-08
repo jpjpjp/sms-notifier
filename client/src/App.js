@@ -1,7 +1,18 @@
 import React, { Component} from 'react';
 import { Navbar, Button } from 'react-bootstrap';
-import logo from './abr-logo.png';
+import Parser from 'html-react-parser';
+import logo from './logo.png';
 import './App.css';
+
+let orgName = '';
+let orgUrl = '';
+if ((!process.env.REACT_APP_ORGANIZATION_NAME) || (!process.env.REACT_APP_ORGANIZATION_URL)) {
+  alert('Cound\'t read the ORGANIZATION_NAME config from the environment');    
+} else {
+  orgName = process.env.REACT_APP_ORGANIZATION_NAME;
+  orgUrl = process.env.REACT_APP_ORGANIZATION_URL;
+}
+
 
 class App extends Component {
   goTo(route) {
@@ -23,10 +34,10 @@ class App extends Component {
       <Navbar fluid>
         <div className='navbar-header'>
           <div className='nav navbar-nav navbar-left'>
-            <a href='http://www.albanybikerescue.org/'>
+            <a href={Parser(orgUrl)}>
               <img src={logo} className='logo-left' alt='logo' />
             </a>
-            <h1 className='navbar-brand'>Welcome to the Albany Bike Rescue SMS Notifier</h1>
+            <h1 className='navbar-brand'>Welcome to the {Parser(orgName)} SMS Notifier</h1>
           </div>
           <div className='second-button'>
             {

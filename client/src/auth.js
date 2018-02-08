@@ -2,11 +2,6 @@ import auth0 from 'auth0-js';
 import history from './history';
 
 
-if (process.env.NODE_ENV !== 'production') {
-  var dotenv = require('dotenv');
-  dotenv.load();
-}
-
 if((!process.env.REACT_APP_OAUTH_CALLBACK) || (!process.env.REACT_APP_OAUTH_DOMAIN) || 
   (!process.env.REACT_APP_OAUTH_CLIENT_ID) || (!process.env.REACT_APP_OAUTH_AUDIENCE)) {
   alert('Cound\'t read the OAUTH config from the environment');    

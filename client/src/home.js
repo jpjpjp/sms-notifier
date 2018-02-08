@@ -4,6 +4,14 @@ import MemberTable from './member-table';
 
 import './App.css';
 
+let orgName = ''
+if (!process.env.REACT_APP_ORGANIZATION_NAME){
+  alert('Cound\'t read the ORGANIZATION_NAME config from the environment');    
+} else {
+  orgName = process.env.REACT_APP_ORGANIZATION_NAME;
+}
+
+
 // Helper for checking for duplicates client side
 function findWithAttr(array, attr, value) {
   for(var i = 0; i < array.length; i += 1) {
@@ -101,9 +109,6 @@ class Home extends Component {
           // How do I delete this bad boy?
           return alert('Writing to DB failed: ' + res.status);
         }
-        if (this.props.auth.isSessionExpired(401)) {
-          return this.expireSession();
-        }
         users.push(row);
         let numbers = this.state.numbers;
         numbers.push(row.number);
@@ -123,11 +128,11 @@ class Home extends Component {
     let msg = '';
     if (cellValue === 'true') {
       row[cellName] = true;
-      msg = 'Welcome Admin to the Albany Bike Rescue Texting System\n'+
-        'Reply to send texts to all ABR Members.';
+      msg = 'Welcome Admin to the '+orgName+' Texting System\n'+
+        'Reply to send texts to all '+orgName+' Members.';
     } else if (cellValue === 'false') {
       row[cellName] = false;
-      msg= 'You are no longer an Administrator of the ABR Texting System\n'+
+      msg= 'You are no longer an Administrator of the '+orgName+' Texting System\n'+
         'Any messages sent to this number will be ignored.  Bye.';
     }
     else {
