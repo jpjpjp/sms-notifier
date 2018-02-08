@@ -1,0 +1,1208 @@
+{
+	"info": {
+		"name": "smsNotifiyMemberList",
+		"_postman_id": "7122bf99-f1ec-f7de-1da2-fea4bd5c5c6b",
+		"description": "A set of test cases to validate the functionality of the notify-member-list project.   It is broken into two parts.\n\nThe web client test exercise the APIs that the web GUI will call in our server.  These are typically things like get member list, add, modify, delete members, etc, as well as requesting that a text message be broadcast to some or all of the member list.\n\nThe cPaaS tests exercise how our application performs when inbound SMS messages are handled.  SMS messages may be sent to the public number or the admin number.   Messages to the public number are assumed to be a question for the organization and they are forwarded to each of the admins.\n\nMessages to the admin number are assumed to be from an admin.  If this is not the case the sender gets a message that they don't have permission to do this.  If it IS from an admin the message is broadcast to all members that have not opted out or (if the text starts with \"reply\") sent just to a single member.  In the case of a reply, the other admins are notified that a reply was sent.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Web Client Tests",
+			"description": "Excercise the APIs we expect the web client to use",
+			"item": [
+				{
+					"name": "/getMemberList expired JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 401)  {",
+									"    tests[\"getMemberList expired JWT: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList  expired JWT: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1EUTFRakkyUkRoQ09EY3pNa0ZGUWpjMk5qQTFOVUpHT0RrMk1qSTJOREExTkRJMlJqVTBOUSJ9.eyJpc3MiOiJodHRwczovL2FsYmFueS1iaWtlLXJlc3VlLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1YTFjNzBiNDliNzNkNDc2MDQ0ZmYwM2MiLCJhdWQiOlsibG9jYWxob3N0OjExODUiLCJodHRwczovL2FsYmFueS1iaWtlLXJlc3VlLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE1MTIxNDc0MDYsImV4cCI6MTUxMjE1NDYwNiwiYXpwIjoibE0xeE9ObzZaSVh4M3NlNDFqblZBRDEwaWEyRFJ6Q3EiLCJzY29wZSI6Im9wZW5pZCJ9.mH0qr7mp8rePJC-kaWkM6FU7HGVo-InDs6psnQ0PAHwYrhoa_eJKchwH8zaA73kj3i4079KwQHQ8yr357mBZPY2gJfPfiA_G2dzrjLXFn5x7yVUyK81j6xFQjESh22T-i4u9BpeWNGy6IIuZf6-2at8BjjTKoFJacTN7T8JR7B0nebEPMupie3Lgs6oz0nXy45FELYYkYcy3699eQGAogb8vx_eiDAIQuzyTNp-LCU7M6OlvxeFHTBCQIEMVAgDYfbOfEAx5KtkzgWXfQTNlYvZow8buktYtheCSJ5eod16No_fufw5meoUHt-2__vEnT-gZLlZGYyBpoJmfhpgLPw"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList invalid JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 401)  {",
+									"    tests[\"getMemberList expired JWT: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList  expired JWT: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1EUTFRakkyUkRoQ09EY3pNa0ZGUWpjMk5qQTFOVUpHT0RrMk1qSTJOREExTkRJMlJqVTBOUSJ9.eyJpc3MiOiJodHRwczovL2FsYmFueS1iaWtlLXJlc3VlLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1YTFjNzBiNDliNzNkNDc2MDQ0ZmYwM2MiLCJhdWQiOlsibG9jYWxob3N0OjExODUiLCJodkM6FU7HGVo-InDs6psnQ0PAHwYrhoa_eJKchwH8zaA73kj3i4079KwQHQ8yr357mBZPY2gJfPfiA_G2dzrjLXFn5x7yVUyK81j6xFQjESh22T-i4u9BpeWNGy6IIuZf6-2at8BjjTKoFJacTN7T8JR7B0nebEPMupie3Lgs6oz0nXy45FELYYkYcy3699eQGAogb8vx_eiDAIQuzyTNp-LCU7M6OlvxeFHTBCQIEMVAgDYfbOfEAx5KtkzgWXfQTNlYvZow8buktYtheCSJ5eod16No_fufw5meoUHt-2__vEnT-gZLlZGYyBpoJmfhpgLPw"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Abr Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    tests[\"Get Access Token: failed\"] = false",
+									"}",
+									"else {",
+									"    tests[\"Get Access Token: created\"] = true",
+									"",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    if (jsonData.access_token === undefined) {",
+									"        tests[\"Get Access Token: cannot retreive token\"] = false",
+									"    }",
+									"    else {",
+									"        var access_token = jsonData.access_token;",
+									"        postman.setEnvironmentVariable(\"access_token\", access_token);",
+									"        tests[\"Get Access Token: created token:\" + access_token] = true",
+									"    }",
+									"}",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"client_id\":\"{{auth_client_id}}\",\n\t\"client_secret\":\"{{auth_client_secret}}\",\n\t\"audience\":\"{{auth_audience}}\",\n\t\"grant_type\":\"client_credentials\"\n}"
+						},
+						"url": {
+							"raw": "https://{{auth_domain}}/oauth/token",
+							"protocol": "https",
+							"host": [
+								"{{auth_domain}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						},
+						"description": "Call Auth0 to get an access token.\nTODO -- save this to the environment variable for subsequent calls"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"getMemberList: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/addMember",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    tests[\"Add Member: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"Add Member: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"17813086969\",\n\t\"_id\": \"17813086969\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/addMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addMember"
+							]
+						},
+						"description": "Add a member from the list and the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList new member check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"getMemberList: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList: success\"] = true;",
+									"    if (responseBody.has('17813086969')) {",
+									"        tests[\"getMemberList new member check: success\"] = true;",
+									"    } else {",
+									"        tests[\"getMemberList new member check: failed\"] = false;",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/addMember duplicate test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 500) {",
+									"    tests[\"addMember duplicate: failed\"] = false",
+									"}",
+									"else {",
+									"    tests[\"addMember duplicate: returned 500\"] = true",
+									"",
+									"    if (responseBody !== 'E11000 duplicate key error collection: 5a1831f597019905da2cd89f_AbrMembersDB.AbrMembersCollection-Dev index: _id_ dup key: { : \"17813086969\" }') {",
+									"        tests[\"addMember: unexpected error message\"] = false",
+									"    }",
+									"    else {",
+									"        tests[\"addMember: Got expected error message\"] = true",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"17813086969\",\n\t\"_id\": \"17813086969\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/addMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addMember"
+							]
+						},
+						"description": "Get a duplicate error when trying to add same member twice"
+					},
+					"response": []
+				},
+				{
+					"name": "/updateMember - change name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if ((responseCode.code != 200) || (responseBody !== 'Member Updated succesfully.')) {",
+									"    tests[\"updateMember: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"updateMember: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"Faker\",\n\t\"lastName\": \"McFake\",\n\t\"number\": \"17813086969\",\n\t\"_id\": \"17813086969\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/updateMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"updateMember"
+							]
+						},
+						"description": "Update a member from the list and the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList new name check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"getMemberList: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList: success\"] = true;",
+									"    if (responseBody.has('McFake')) {",
+									"        tests[\"getMemberList new member check: success\"] = true;",
+									"    } else {",
+									"        tests[\"getMemberList new member check: failed\"] = false;",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/updateMember - change number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// We expect the \"Added Member\" message here because internally when a phone number changes",
+									"// we delete the old record and replace it with a new one",
+									"if ((responseCode.code != 200) || (responseBody !== 'Added member succesfully.')) {",
+									"    tests[\"updateMember: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"updateMember: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"JP\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"18885551234\",\n\t\"_id\": \"17813086969\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/updateMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"updateMember"
+							]
+						},
+						"description": "Update a member from the list and the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList new number check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"getMemberList: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList: success\"] = true;",
+									"    if (responseBody.has('18885551234')) {",
+									"        tests[\"getMemberList new member check: success\"] = true;",
+									"    } else {",
+									"        tests[\"getMemberList new member check: failed\"] = false;",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList - save numbers for admins",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f0e0088a-5e8e-431b-a418-b575d3999f9a",
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"getMemberList: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"getMemberList: success\"] = true;",
+									"    // Walk the list and save all the numbers belonging to admins",
+									"    // We will use this to validate that messages are broadcast properly to all of them",
+									"    // We will also save the total number of members that shoudl get a broadcast message",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    let totalOptIns = 0;",
+									"    let adminNumbers = [];",
+									"    for (i=0; i< jsonData.length; i++) {",
+									"        let member = jsonData[i];",
+									"        if (!member.optOut) {",
+									"            totalOptIns += 1;",
+									"        }",
+									"        if (member.isAdmin) {",
+									"            adminNumbers.push(member._id);",
+									"        }",
+									"    } ",
+									"    postman.setEnvironmentVariable(\"_admin_numbers\", adminNumbers.join());",
+									"    postman.setEnvironmentVariable(\"_totalOptIns\", totalOptIns);",
+									"",
+									"    if (adminNumbers.length) {",
+									"        postman.setEnvironmentVariable(\"_one_admins_number\", adminNumbers[0]);",
+									"    } else {",
+									"        tests[\"Member List contains at least one admin: failed\"] = false;        ",
+									"    }",
+									"}",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"JP\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"18885551234\",\n\t\"_id\": \"18885551234\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Attempt to delete a non-existent member from the database."
+					},
+					"response": []
+				},
+				{
+					"name": "/sendMessage -- happy path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 200)  {",
+									"    tests[\"sendMessage: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"sendMessage: success\"] = true;",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"message\":\"Postman Tester\",\"numbers\":\"{{sms_recipient}}\"}"
+						},
+						"url": {
+							"raw": "{{url}}/sendMessage",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"sendMessage"
+							]
+						},
+						"description": "Will send a text to the recipient in sms_recpient env variable.  This can be a comma seperated list of numbers"
+					},
+					"response": []
+				},
+				{
+					"name": "/sendMessage -- missing body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (responseCode.code != 422)  {",
+									"    tests[\"sendMessage invalid body: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"sendMessage invalid body: success\"] = true;",
+									"    if (responseBody === 'Missing required form data') {",
+									"        tests[\"sendMessage invalid body response: success\"] = true;",
+									"    } else {",
+									"        tests[\"sendMessage invalid body response: failed\"] = false;",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/sendMessage",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"sendMessage"
+							]
+						},
+						"description": "Will send a text to the recipient in sms_recpient env variable.  This can be a comma seperated list of numbers"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "cPaaS Tests.  ",
+			"description": "Excersice the callbacks that we expect the cPaaS to make to our server.  Since the request was not sent from our cPaaS no outbound mesages are actually sent but our tests can ensure that the expected responses are being generated.",
+			"item": [
+				{
+					"name": "/initialCPaaSUrl - sample member inbound",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"This is an incoming message from the test framework.   Ignore.\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - no data test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Test invalid call from Tropo, no data at all"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - no message data",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Test invalid call from Tropo, no initialText data l"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - STOP message from unknown number",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"Stop\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t\t{\n\t\t\t\"id\":\"17813089999\",\n\t\t\t\"e164Id\":\"17813089999\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS from an unknown number"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - incoming stop message from member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"Stop\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - incoming RESTART message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"restart\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound REStARt SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - Admin Brodacast Message",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "582322fc-aeb6-4365-a9cf-40838c557555",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "d50b7282-0123-4916-8c50-74fc03c03eb5",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"This is a test broadcast message.\");",
+									"});",
+									"",
+									"pm.test(\"Message is sent to all members who opted in\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var tropoData = jsonData.tropo;",
+									"    var totalOptIns = parseInt(postman.getEnvironmentVariable(\"_totalOptIns\"));",
+									"    pm.expect(tropoData.length == totalOptIns);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"This is a test broadcast message.   Ignore.\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{admin_number}}\",\n\t\t\t\t\"e164Id\":\"{{admin_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{_one_admins_number}}\",\n\t\t\t\"e164Id\":\"{{_one_admins_number}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - Text to Admin Number from non Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"session\":\n  {\n    \"id\":\"f7404eade4b6c3901963335974a84649\",\n    \"accountId\":\"5045948\",\n    \"applicationId\":\"5174006\",\n    \"timestamp\":\"2017-11-30T02:11:27.262Z\",\n    \"userType\":\"HUMAN\",\n    \"initialText\":\"Yo, where is trinity at again?\",\n    \"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n    \"to\":\n      {\n        \"id\":\"15185520209\",\n        \"e164Id\":\"15185520209\",\n        \"name\":null,\n        \"channel\":\"TEXT\",\n        \"network\":\"SMS\"\n        \n      },\n    \"from\":\n    {\n      \"id\":\"17813086976\",\n      \"e164Id\":\"17813086976\",\n      \"name\":null,\n      \"channel\":\"TEXT\",\n      \"network\":\"SMS\"\n    \n    },\n    \"headers\":\n    {\n      \"Call-ID\":\"vhp3tr8wmsct\",\n      \"CSeq\":\"1 INVITE\",\n      \"Max-Forwards\":\"70\",\n      \"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n      \"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n      \"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n      \"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n      \"Content-Length\":\"4\",\n      \"x-tropo-sms\":\"true\",\n      \"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n      \"Content-Type\":\"text/plain\",\n      \"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate ordinary inbound from a member"
+					},
+					"response": []
+				},
+				{
+					"name": "/initialCPaaSUrl - Admin REPLY command",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"This is an incoming message from the test framework.   Ignore.\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/initialCPaaSUrl",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"initialCPaaSUrl"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/deleteMember - with new number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ((responseCode.code != 200) || (responseBody !== 'Member deleted succesfully.')) {",
+									"    tests[\"updateMember: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"updateMember: success\"] = true;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"JP\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"18885551234\",\n\t\"_id\": \"18885551234\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/deleteMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"deleteMember"
+							]
+						},
+						"description": "Delete a member from the list and the database"
+					},
+					"response": []
+				},
+				{
+					"name": "/deleteMember - non-exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ((responseCode.code != 400) || (responseBody !== 'Item does not exist in DB.')) {",
+									"    tests[\"deleteMember duplicate: failed\"] = false;",
+									"}",
+									"else {",
+									"    tests[\"deleteMember duplicate: success\"] = true;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"JP\",\n\t\"lastName\": \"fake\",\n\t\"number\": \"18885551234\",\n\t\"_id\": \"18885551234\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/deleteMember",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"deleteMember"
+							]
+						},
+						"description": "Attempt to delete a non-existent member from the database."
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"id": "47fb732d-e273-4922-89ba-991a8f821291",
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"id": "39776a65-a418-4a50-912d-41f2f85147e0",
+						"type": "text/javascript"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					""
+				],
+				"id": "714259dc-f4a4-4b87-84ee-a9bfc7deaf0a",
+				"type": "text/javascript"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"exec": [
+					""
+				],
+				"id": "df37ba54-3541-49d2-ac29-cc7db2e9ffa0",
+				"type": "text/javascript"
+			}
+		}
+	]
+}

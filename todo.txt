@@ -1,6 +1,5 @@
 -- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
 -- Break out the webhook specific code so that twilio or another service could do the message
--- Make sure the readme is semi-useful
 -- Make ABR stuff (logo, name) work with environment variables
 -- Set up websockets, dynamically update the table data based on backend changes
 -- Warn if user tries to activate someone who has opted out.
@@ -10,8 +9,6 @@
 -- Figure out how to set up Mongo IP Whitelist for Heroku production (maybe impossible with free version?)
 -- Allow users to cancel/edit in the dialog after send it
 -- Think about fixing race condition if user opts out but client webpage is out of sync with DB.   This will fix itself if I ever do a websocket and dynamically update the send counts
--- Add the ablity for an admin to reply to just one user (work around is for them to do it themselves)
--- Add postman tests to github and make them part of the build process.
 
 Done:
 11/22/17 -- Show something when the backend is not available, Submit button generates error box.
@@ -29,6 +26,9 @@ Done:
 ??? -- Set up webhooks, update received send counts in database
 ??? -- Store admin numbers in DB if an admin sends a message to our number it will broadcast to the default distribution list
 ???-- Send an SMS to a user from the Admin number if their admin status changes
+02/05/18 -- Add the ablity for an admin to reply to just one user (work around is for them to do it themselves)
+02/08/18-- Add postman tests to github and make them part of the build process.
+02/08/18 -- Make sure the readme is semi-useful
 
 
 
