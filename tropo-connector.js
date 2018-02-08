@@ -175,10 +175,10 @@ class TropoConnector {
    * This method will return a response to Tropo instructing it on how to respond
    */
   processIncoming(res, reqJson, tropo) {
-    console.log('Responding to a response');
     var fromNum = reqJson.session.from.e164Id;
     var toNum = reqJson.session.to.e164Id;
     var incomingMsg = reqJson.session.initialText;
+    console.log('Processing an Incoming Text Message from: '+fromNum);
 
     // Handle an unexpected phone call
     if (reqJson.session.from.channel === 'VOICE') {
@@ -227,56 +227,84 @@ class TropoConnector {
               console.log('Sending message:'+msg + ' to: ' + admin.firstName);
               //Call(to, answerOnMedia, channel, from, headers, name, network, recording, required, timeout, allowSignals, machineDetection, voice, callbackUrl, promptLogSecurity, label)
               //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-              tropo.message(msg, admin.number, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
+              tropo.message(msg, admin._id, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
             }
             return that.packageAndSendMessages(res, tropo);
           });
         });
       }
     } else if (toNum === that.tropoAdminNumber) {
-      // This is a message to the admin number so it came from an Admin
-      // Possible TODO -- validate the the from number matches one that matches admins
-      msg = incomingMsg.replace(/\n\n/g, '{newline}');
-      // Generally messages sent to the Admin number are broadcast to all members
-      // We check here to see if the special "Reply <number>"" command is used in which case
-      // the message is sent only to the requested number.  This is useful since other admins
-      // can see if a question is answered, but it still ensures that members only ever see the
-      // public number
-      if (msg.toUpperCase().startsWith('REPLY')) {
-        // Future feature:  don't FORCE the second word of the REPLY command to be a number
-        // Send it to the last number (this might be tricky if the server goes to sleep)
-        let words = msg.split(' ');
-        words.shift();  //get rid of the word "reply"
-        let number = words.shift(); // get the number to send it to?
-        let e164_number = that.idFromNumber(number);
-        if (!e164_number) {
-          // Number in reply command was invalid.  Let admin know
-          msg = 'Cannot send a text to invalid number: ' + number+ '. Try again using REPLY <NUMBER> <MESSAGE>, ie:{newline}' +
-                'Reply 518-555-1234 Hi There!{newline}{newline}No spaces allowed in number.';
-          tropo.message(msg, that.tropoPublicNumber, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
-        } else {
-          msg = words.join(' ');
-          tropo.message(msg, e164_number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
-          msg = 'Message sent to: ' + number+ '.';
-          tropo.message(msg, that.tropoPublicNumber, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);          
-        }
-        return that.packageAndSendMessages(res, tropo);
-      } else {
-        // Treat this is as a BROADCAST request from an admin, send it to all members
-        that.memberList.getMemberList(function(err, memberList) {
-          if ((err)|| (!memberList.length)) {return that.tropoError(res, 'Could not get the member list.');}
-          msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
-          for (let i=0; i<memberList.length; i++) {
-            let member = memberList[i];
-            //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-            if (!member.optOut) {
-              console.log('Broadcasting message:'+msg + ' to: ' + member.firstName);
-              tropo.message(msg, member.number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+      // This is a message to the admin number should only come from an Admin, lets verify that
+      // Fetch the admins from the member list and send to each of them.
+      let adminFound = false;
+      that.memberList.getAdminList(function (err, adminList){
+        if ((!err) && (adminList.length)) {
+          for (let i=0; i<adminList.length; i++) {
+            let admin = adminList[i];
+            if (admin._id == fromNum) {
+              console.log('Processing a message to the Admin Number from: '+admin.firstName);
+              // Possible TODO -- validate the the from number matches one that matches admins
+              msg = incomingMsg.replace(/\n\n/g, '{newline}');
+              // Generally messages sent to the Admin number are broadcast to all members
+              // We check here to see if the special "Reply <number>"" command is used in which case
+              // the message is sent only to the requested number.  This is useful since other admins
+              // can see if a question is answered, but it still ensures that members only ever see the
+              // public number
+              if (msg.toUpperCase().startsWith('REPLY')) {
+                // Future feature:  don't FORCE the second word of the REPLY command to be a number
+                // Send it to the last number (this might be tricky if the server goes to sleep)
+                let words = msg.split(' ');
+                words.shift();  //get rid of the word "reply"
+                let number = words.shift(); // get the number to send it to?
+                let e164_number = that.idFromNumber(number);
+                if (!e164_number) {
+                  // Number in reply command was invalid.  Let admin know
+                  msg = 'Cannot send a text to invalid number: ' + number+ '. Try again using REPLY <NUMBER> <MESSAGE>, ie:{newline}' +
+                        'Reply 518-555-1234 Hi There!{newline}{newline}No spaces allowed in number.';
+                  tropo.message(msg, that.tropoAdminNumber, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+                } else {
+                  msg = words.join(' ');
+                  tropo.message(msg, e164_number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+                  msg = admin.firstName + ' responded to ' + number+ ' with:{newline}'+msg;
+                  for (let i=0; i<adminList.length; i++) {
+                    // Let the other admins know
+                    if (adminList[i]._id != admin._id) {
+                      tropo.message(msg, adminList[i]._id, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);          
+                    }
+                  }
+                }
+                return that.packageAndSendMessages(res, tropo);
+              } else {
+                // Treat this is as a BROADCAST request from an admin, send it to all members
+                adminFound = true;
+                break;
+              }
             }
           }
+        }
+        if (adminFound) {
+          // Broadcast the message to all members
+          that.memberList.getMemberList(function(err, memberList) {
+            if ((err)|| (!memberList.length)) {return that.tropoError(res, 'Could not get the member list.');}
+            msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
+            for (let i=0; i<memberList.length; i++) {
+              let member = memberList[i];
+              //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
+              if (!member.optOut) {
+                console.log('Broadcasting message:'+msg + ' to: ' + member.firstName);
+                tropo.message(msg, member.number, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
+              }
+            }
+            return that.packageAndSendMessages(res, tropo);
+          });
+        } else {
+          // We get here only if we could not match the fromNumber to an admin account
+          console.error('Got a message to the Admin number from '+fromNum+'. This number does not belong to an Admin');
+          msg = 'Cannot accept messages from this number.  Contact the staff at Albany Bike Rescue if you think this is an error.';
+          tropo.message(msg, fromNum, null, 'TEXT', that.publicNumber, null, 'SMS', null, 120, null);
           return that.packageAndSendMessages(res, tropo);
-        });
-      }
+        }
+      });
     } else {
       // Else we didn't expect a text to this number, ignore
       return that.tropoError(res, 'Ignoring inbound to unexpected number: '+toNum);
