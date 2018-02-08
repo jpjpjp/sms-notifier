@@ -7,6 +7,7 @@
  * 
  * JP Shipherd 11/22/2017
  */
+/*eslint-env node*/  // Don't complain about console.log statements
 
 var debug = require('debug')('TropoConnector');
 
@@ -28,6 +29,7 @@ class TropoConnector {
       this.tropoPublicNumber = process.env.TROPO_PUBLIC_NUMBER;
       this.tropoAdminNumber = process.env.TROPO_ADMIN_NUMBER;
       this.tropoApiKey = process.env.TROPO_API_KEY;
+      this.organizationName = process.env.REACT_APP_ORGANIZATION_NAME;
     }
     this.tropoUri = '/1.0/sessions?action=create&token='+this.tropoApiKey;
     this.memberList = memberList;
@@ -55,7 +57,7 @@ class TropoConnector {
     }
 
     // Post the URI to a Tropo app to trigger the SMS
-    console.log('Final URI %s\n', tropoUri);
+    debug('Final URI %s\n', tropoUri);
     var options = {
       uri: 'https://api.tropo.com' + tropoUri,
       method: 'GET',
@@ -63,7 +65,7 @@ class TropoConnector {
     };
 
     request.get(options, this.tropoCallbackWithHttpResponse(res));
-    console.log('Sent request to Tropo and will show user request in browser.');      
+    console.log('Sent SMS request from browser to cPaaS.');      
   }
 
   /**
@@ -122,7 +124,7 @@ class TropoConnector {
         out_num = numberToDial;
       }
       if (typeof network !== 'undefined') {
-        console.log('Got network from the webform: ' + network);
+        debug('Got network from the webform: ' + network);
         out_network = network.toUpperCase();
         if ((out_network != 'SMS') && (out_network != 'PSTN')  && (out_network != 'SIP')) {
           out_network = 'PSTN';
@@ -139,7 +141,7 @@ class TropoConnector {
         var fromNum = this.tropoAdminNumber;
       } else {
         out_msg = out_msg.replace(/\n\n/g, '{newline}');
-        out_msg = 'Message from Albany Bike Rescue:{newline}' + out_msg + '{newline}Reply STOP to opt out.';
+        out_msg = 'Message from '+ this.organizationName+':{newline}' + out_msg + '{newline}Reply STOP to opt out.';
         fromNum = this.tropoPublicNumber;
       }
       // Build JSON to ask Tropo to perform request
@@ -148,7 +150,7 @@ class TropoConnector {
         let numOut = out_num_array[i];
         if (numOut.length >= 9) { //work around issue where we sometimes get blank number
           //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
-          console.log('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
+          debug('Kicking off reqeust message:' + out_msg + '. via:' + network + ' to: ' + out_num);
           tropo.message(out_msg, numOut, null, 'TEXT', fromNum, null, network, null, 120, null);
         } else {
           console.error('Got a request to send a text to an invalid number:'+numOut);
@@ -183,7 +185,7 @@ class TropoConnector {
     // Handle an unexpected phone call
     if (reqJson.session.from.channel === 'VOICE') {
       //tropo.call(out_num, null, null, null, null, null, network, null, null, 120);
-      tropo.say('Hi.  I\'m the Albany Bike Rescue text message phone number, but I don\'t do anything interesting if you call me.');      
+      tropo.say('Hi.  I\'m the '+ this.organizationName+' text message phone number, but I don\'t do anything interesting if you call me.');      
       return res.end(tropo_webapi.TropoJSON(tropo));
     }
 
@@ -199,8 +201,8 @@ class TropoConnector {
         that.memberList.setOptOut(fromNum, optOut, function(err, status) {
           if ((err)|| (!status)) {return that.tropoError(res, 'Cannot figure out who sent this! Ignoring');}          
           // Respond that the optout will be enforced, or is taken off
-          msg = 'You will no longer get text notifications from Albany Bike Rescue.  Reply RESTART to get them again.';
-          if (!optOut) {msg = 'You will start getting notifications from Albany Bike Resuce again.';}
+          msg = 'You will no longer get text notifications from '+ that.organizationName+'.  Reply RESTART to get them again.';
+          if (!optOut) {msg = 'You will start getting notifications from '+ that.organizationName+' again.';}
           tropo.message(msg, fromNum, null, 'TEXT', that.tropoPublicNumber, null, 'SMS', null, 120, null);
           return res.end(tropo_webapi.TropoJSON(tropo));
         });
@@ -286,7 +288,7 @@ class TropoConnector {
           // Broadcast the message to all members
           that.memberList.getMemberList(function(err, memberList) {
             if ((err)|| (!memberList.length)) {return that.tropoError(res, 'Could not get the member list.');}
-            msg = 'Message from Albany Bike Rescue:{newline}' + msg + '{newline}Reply STOP to opt out.';
+            msg = 'Message from '+ that.organizationName+':{newline}' + msg + '{newline}Reply STOP to opt out.';
             for (let i=0; i<memberList.length; i++) {
               let member = memberList[i];
               //TropoWebAPI.message = (say, to, answerOnMedia, channel, from, name, network, required, timeout, voice)
@@ -300,7 +302,7 @@ class TropoConnector {
         } else {
           // We get here only if we could not match the fromNumber to an admin account
           console.error('Got a message to the Admin number from '+fromNum+'. This number does not belong to an Admin');
-          msg = 'Cannot accept messages from this number.  Contact the staff at Albany Bike Rescue if you think this is an error.';
+          msg = 'Cannot accept messages from this number.  Contact the staff at '+ that.organizationName+' if you think this is an error.';
           tropo.message(msg, fromNum, null, 'TEXT', that.publicNumber, null, 'SMS', null, 120, null);
           return that.packageAndSendMessages(res, tropo);
         }
@@ -348,7 +350,7 @@ class TropoConnector {
     // This wierd hack is the onlly way I could figure out how to get '\n' char into the message sent to Tropo
     var newJSON = tropo_webapi.TropoJSON(tropo);
     newJSON = newJSON.replace(/{newline}/g, '\\n');
-    console.log(newJSON);
+    debug(newJSON);
     return res.end(newJSON);        
   }
 

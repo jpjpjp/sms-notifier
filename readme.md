@@ -46,13 +46,38 @@ All four of these environment variables are used by the react client code.  The 
 
 Note that all auth0 code is localized to <a href='./client/src/auth.js'>auth.js</a>.   It should be possible to create a new module to use a identity provider.<br>
 
-Prior to running the applciation, the Auth0 owner needs to set up at least one user in the Auth0 system so that they can login to the sms-notifier app.
+Prior to running the applciation, the Auth0 owner needs to set up at least one user in the Auth0 system so that they can 
+login to the sms-notifier app.
+
+
+
+## Branding the Application
+In addition to the configuration steps above, developers should do the following to brand the website and text messages for their organization, as follows:
+
+1)  Update logo.png to a logo for your organization.   Ideally the logo height is not greater than 75 pixels.  Logo width can be up to 128 pixels.
+2)  Update favicon.ico in the clients/public directory to match your organizations log
+
+Set the following environment variables:
+<ul>
+<li>REACT_APP_ORGANIZATION_NAME -- this is the name that appears on the website, and in all branded text messages sent from the system.   If you are using .env files in development, this variable is used by both the client and the server so you'll need to set it in both places. 
+<li>REACT_APP_ORGANIZATION_NAME -- the url that web users are redirected to if they click the logo image.   This is used only by the client.
+</ul>
+
+
+## Running the client in dev mode
+
+The react client was built using the <a href='https://github.com/facebookincubator/create-react-app'>create-react-app</a> package.   During development it runs on localhost:3000, by running 'npm start' in the client directory.   
+
+Run: 'npm run build' in the client directory to build the packaged client which can be used when running the server in standalone mode.
 
 ## Running the server
+The server is a standard node express server that can be started by typing:
 
-The react client was built using the <a href='https://github.com/facebookincubator/create-react-app'>create-react-app</a> package.   During development it runs on localhost:3000, by running 'npm start' in the client directory.   Run 'npm run build' in the client directory to build the packaged client.  You can tell your server running locally to serve your optimized build by setting the environment variable DEV_MODE to 'production'.
+    npm start
 
-<br>The server starts with node start in the root directory.  Note that the URL where the server runs is needed during the Tropo configuration phase, so that a Tropo WebAPI app can be configured to call into our server to process requests.
+You can tell your server running locally to serve your optimized build by setting the environment variable DEV_MODE to 'production'.
+
+Note that the URL where the server runs is needed during the Tropo configuration phase, so that a Tropo WebAPI app can be configured to call into our server to process requests.
 
 ## Testing the server
 

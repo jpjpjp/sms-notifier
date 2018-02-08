@@ -37,13 +37,13 @@ class MemberList {
   constructor(cb) {
     // TODO figure out how to make this work for LARGE lists that can't all be in memory
     mongo_client.connect(mongoUri, function(err, db) {
-      if (err) {return console.log('Error connecting to Mongo '+ err.message);}
+      if (err) {return console.error('Error connecting to Mongo '+ err.message);}
       db.collection(mConfig.mongoCollectionName, {strict:true}, function(err, collection) {
         if (err) {
           if (cb) {
             return cb(err);
           } else {
-            return console.log('Error getting Mongo collection  '+ err.message);}
+            return console.error('Error getting Mongo collection  '+ err.message);}
         }
         mConfig.collection = collection;
         // Optimize lookups of Admins
@@ -69,7 +69,7 @@ class MemberList {
       // Perform a simple find and return all the documents
       mConfig.collection.find().toArray(function(err, list) {
         if (err){
-          return cb({status: 500, message: e.message});
+          return cb({status: 500, message: err.message});
         }
         that.memberList = list;
         return cb(null, that.memberList);
@@ -92,7 +92,7 @@ class MemberList {
         if (err) {
           return cb(err);
         } else {
-          console.log('find admins returned: '+list.length);
+          debug('find admins returned: '+list.length);
           return cb(null, list);
         }
       });
@@ -134,7 +134,6 @@ class MemberList {
   addMember(member, cb) {
     // validate that member is propoerly formed.....
     const newMember = member;
-    let that = this;
     
     if ((typeof newMember.number === 'undefined') || (typeof newMember.firstName === 'undefined') ||
     (typeof newMember.lastName === 'undefined') || (typeof newMember.isAdmin === 'undefined')){
@@ -142,7 +141,7 @@ class MemberList {
       return cb(null, {status: 400, message: 'Invalid Member Object'}, null);        
     }
     if (mConfig.collection) {
-    mConfig.collection.insertOne(newMember, function (err, res) {
+    mConfig.collection.insertOne(newMember, function (err) {
       if (err) {
         return cb(null, {status: 500, message: err.message});
       } else {
@@ -165,7 +164,6 @@ class MemberList {
    * 
    */
   setOptOut(number, status, cb) {
-    let that = this;
     if (mConfig.collection) {
       mConfig.collection.update({_id: number}, {$set: {'optOut': status}}, function (err, res) {
         if (err){
@@ -195,7 +193,6 @@ class MemberList {
    */
   updateMember(member, cb) {
     const newMember = member;
-    let that = this;
     if (typeof newMember._id === 'undefined') {
       return cb(null, {status: 400, message: 'Invalid Member Object'});        
     }
@@ -203,10 +200,10 @@ class MemberList {
       mConfig.collection.findOneAndUpdate({_id: newMember._id}, newMember, function (err, res) {
         if (err){
           console.error(err.message);
-          return cb(null, {status: 500, message: e.message});
+          return cb(null, {status: 500, message: err.message});
         }
-        console.log('findOneAndUpdate returned:');
-        console.log(res);
+        debug('findOneAndUpdate returned:');
+        debug(res);
         return cb(null, {status: 200, 
           message: 'Member Updated succesfully.'});
       });
@@ -258,7 +255,6 @@ class MemberList {
   deleteMember(member, cb) {
     // validate that member is propoerly formed.....
     const newMember = member;
-    let that = this;
     if (typeof newMember._id === 'undefined') {
       return cb(null, {status: 400, message: 'Invalid Member Object'});        
     }
