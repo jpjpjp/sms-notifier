@@ -43,6 +43,7 @@ class App extends Component {
             {
               !isAuthenticated() && (
                 <Button
+                  bsSize='large'
                   bsStyle='primary'
                   className='btn-margin'
                   onClick={this.login.bind(this)}
@@ -54,6 +55,7 @@ class App extends Component {
             {
               isAuthenticated() && (
                 <Button
+                  bsSize='large'
                   bsStyle='primary'
                   className='btn-margin'
                   onClick={this.logout.bind(this)}

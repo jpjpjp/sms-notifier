@@ -28,6 +28,10 @@ export default class Auth {
     this.logout = this.logout.bind(this);
     this.handleAuthentication = this.handleAuthentication.bind(this);
     this.isAuthenticated = this.isAuthenticated.bind(this);
+    // Ensure that after initial start of server we come up in non-authenticated mode
+    // We do this by setting the intitial expire at time to some time in the past
+    localStorage.setItem('expires_at', '1418143142306');
+
     //If I'm emulating production mode in my local dev environment I reset the callback to hit my express server
     if (process.env.DEV_MODE === 'production') {
       this.auth0.redirect.baseOptions.redirectUri = 'http://localhost:1185/callback';
