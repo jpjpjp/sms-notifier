@@ -5,9 +5,7 @@ import MemberTable from './member-table';
 import './App.css';
 
 let orgName = ''
-if (!process.env.REACT_APP_ORGANIZATION_NAME){
-  alert('Cound\'t read the ORGANIZATION_NAME config from the environment');    
-} else {
+if (process.env.REACT_APP_ORGANIZATION_NAME) {
   orgName = process.env.REACT_APP_ORGANIZATION_NAME;
 }
 

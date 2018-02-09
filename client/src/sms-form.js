@@ -1,6 +1,12 @@
 import React from 'react';
 import { Button, ControlLabel, FormGroup, FormControl, HelpBlock } from 'react-bootstrap';
+import Parser from 'html-react-parser';
 
+
+let orgName = ''
+if (process.env.REACT_APP_ORGANIZATION_NAME) {
+  orgName = process.env.REACT_APP_ORGANIZATION_NAME;
+}
 
 class SMSForm extends React.Component {
   constructor(props) {
@@ -90,7 +96,7 @@ class SMSForm extends React.Component {
           controlId='textMessageInputarea'
           validationState={this.getValidationState()}
         >
-          <ControlLabel>Message from Albany Bike Rescue:</ControlLabel>
+          <ControlLabel>Message from {Parser(orgName)}:</ControlLabel>
           <FormControl componentClass='textarea' 
             className='Text-Area'
             value={this.state.message}
