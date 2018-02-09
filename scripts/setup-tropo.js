@@ -7,6 +7,7 @@
  * It will get the API Token so that the sms notifier can make outbound requests
  * It will associate two numbers with the app, one number is used to notify members,
  * the other number is used by Admins to broadcast messages and see responses
+ * Finally it will register a webhook for SMS Delivery Receipts
  * 
  * As output it will suggest the Tropo related environment variables that need to 
  * be set for the sms-notifer application to work with Tropo
