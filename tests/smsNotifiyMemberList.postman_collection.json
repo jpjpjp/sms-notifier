@@ -514,6 +514,7 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "ef54efa7-aed0-4fd2-bed4-9aee9f85daf8",
 								"type": "text/javascript",
 								"exec": [
 									"if (responseCode.code != 200)  {",
@@ -526,7 +527,8 @@
 									"    } else {",
 									"        tests[\"getMemberList new member check: failed\"] = false;",
 									"    }",
-									"}"
+									"}",
+									""
 								]
 							}
 						}
@@ -742,6 +744,34 @@
 			"item": [
 				{
 					"name": "/initialCPaaSUrl - sample member inbound",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9b492adf-8a39-461d-a7a7-e0c63ef72063",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"This is an incoming message from the test framework.\");",
+									"});",
+									"",
+									"pm.test(\"Message was sent to all admins\", function() {",
+									"     let admin_nums = postman.getEnvironmentVariable(\"_admin_numbers\").split(',');",
+									"     for (i=0; i< admin_nums.length; i++) {",
+									"         let admin_num = admin_nums[i];",
+									"         console.log(admin_num);",
+									"         pm.expect(pm.response.text()).to.include(\"to\\\":\\\"\"+admin_num);",
+									"         tests[\"Sent to admin number: \"+admin_num+\" success\"] = true;",
+									"     }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -774,6 +804,25 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - no data test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "49b7f0c5-7098-4a45-98ea-18532e3a98e3",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"hangup\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -806,6 +855,25 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - no message data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "eddc7eaf-adb6-4f3f-adb3-ea3d9db4143c",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"hangup\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -838,6 +906,25 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - STOP message from unknown number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "53796190-99ca-4c8c-b1d0-46b5cabb2da9",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"hangup\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -870,6 +957,30 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - incoming stop message from member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35daac55-ee29-4306-a1b5-30111714a7d3",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Reply RESTART to get them again\");",
+									"});",
+									"",
+									"pm.test(\"Message sent to sender\", function () {",
+									"    let sms_recipient = postman.getEnvironmentVariable('sms_recipient');",
+									"    pm.expect(pm.response.text()).to.include(\"\\\"to\\\":\\\"\"+sms_recipient);",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -902,6 +1013,31 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - incoming RESTART message",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e042494-bde7-43f0-8609-1f8436dc3751",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    let org_name = postman.getEnvironmentVariable('org_name');",
+									"    pm.expect(pm.response.text()).to.include(\"You will start getting notifications from \"+org_name);",
+									"});",
+									"",
+									"pm.test(\"Message sent to sender\", function () {",
+									"    let sms_recipient = postman.getEnvironmentVariable('sms_recipient');",
+									"    pm.expect(pm.response.text()).to.include(\"\\\"to\\\":\\\"\"+sms_recipient);",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -948,7 +1084,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d50b7282-0123-4916-8c50-74fc03c03eb5",
+								"id": "110e7d75-b9d7-484c-b32d-655c736c5ae9",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -963,7 +1099,7 @@
 									"    var jsonData = JSON.parse(responseBody);",
 									"    var tropoData = jsonData.tropo;",
 									"    var totalOptIns = parseInt(postman.getEnvironmentVariable(\"_totalOptIns\"));",
-									"    pm.expect(tropoData.length == totalOptIns);",
+									"    pm.expect(tropoData.length).to.equal(totalOptIns);",
 									"});",
 									""
 								]
@@ -1002,6 +1138,30 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - Text to Admin Number from non Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "20adf525-0ec0-48b9-bdab-804965c66f2e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    let org_name = postman.getEnvironmentVariable('org_name');",
+									"    pm.expect(pm.response.text()).to.include(\"Cannot accept messages from this number.  Contact the staff at \"+org_name);",
+									"});",
+									"",
+									"pm.test(\"Message sent to sender\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"\\\"to\\\":\\\"15555551234\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1017,7 +1177,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"session\":\n  {\n    \"id\":\"f7404eade4b6c3901963335974a84649\",\n    \"accountId\":\"5045948\",\n    \"applicationId\":\"5174006\",\n    \"timestamp\":\"2017-11-30T02:11:27.262Z\",\n    \"userType\":\"HUMAN\",\n    \"initialText\":\"Yo, where is trinity at again?\",\n    \"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n    \"to\":\n      {\n        \"id\":\"15185520209\",\n        \"e164Id\":\"15185520209\",\n        \"name\":null,\n        \"channel\":\"TEXT\",\n        \"network\":\"SMS\"\n        \n      },\n    \"from\":\n    {\n      \"id\":\"17813086976\",\n      \"e164Id\":\"17813086976\",\n      \"name\":null,\n      \"channel\":\"TEXT\",\n      \"network\":\"SMS\"\n    \n    },\n    \"headers\":\n    {\n      \"Call-ID\":\"vhp3tr8wmsct\",\n      \"CSeq\":\"1 INVITE\",\n      \"Max-Forwards\":\"70\",\n      \"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n      \"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n      \"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n      \"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n      \"Content-Length\":\"4\",\n      \"x-tropo-sms\":\"true\",\n      \"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n      \"Content-Type\":\"text/plain\",\n      \"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n    }\n  }\n}"
+							"raw": "{\n  \"session\":\n  {\n    \"id\":\"f7404eade4b6c3901963335974a84649\",\n    \"accountId\":\"5045948\",\n    \"applicationId\":\"5174006\",\n    \"timestamp\":\"2017-11-30T02:11:27.262Z\",\n    \"userType\":\"HUMAN\",\n    \"initialText\":\"Yo, where is trinity at again?\",\n    \"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\"to\":\n\t\t{\n\t\t\t\"id\":\"{{admin_number}}\",\n\t\t\t\"e164Id\":\"{{admin_number}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\t\n\t\t},\n\t\"from\":\n\t{\n\t\t\"id\":\"15555551234\",\n\t\t\"e164Id\":\"15555551234\",\n\t\t\"name\":null,\n\t\t\"channel\":\"TEXT\",\n\t\t\"network\":\"SMS\"\n\t\n\t},\n    \"headers\":\n    {\n      \"Call-ID\":\"vhp3tr8wmsct\",\n      \"CSeq\":\"1 INVITE\",\n      \"Max-Forwards\":\"70\",\n      \"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n      \"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n      \"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n      \"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n      \"Content-Length\":\"4\",\n      \"x-tropo-sms\":\"true\",\n      \"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n      \"Content-Type\":\"text/plain\",\n      \"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n    }\n  }\n}"
 						},
 						"url": {
 							"raw": "{{url}}/initialCPaaSUrl",
@@ -1034,6 +1194,42 @@
 				},
 				{
 					"name": "/initialCPaaSUrl - Admin REPLY command",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "dec4b373-047f-4d84-9a85-abd171f9a8d6",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Got Expected Outbound Message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"This is a direct response\");",
+									"});",
+									"",
+									"pm.test(\"Message sent to intended recipient\", function () {",
+									"    let sms_recipient = postman.getEnvironmentVariable('sms_recipient');",
+									"    pm.expect(pm.response.text()).to.include(\"\\\"to\\\":\\\"\"+sms_recipient);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Message was sent to all admins except the sender\", function() {",
+									"     let admin_nums = postman.getEnvironmentVariable(\"_admin_numbers\").split(',');",
+									"     let sender_admins_num = postman.getEnvironmentVariable(\"_one_admins_number\").split(',');",
+									"     for (i=0; i< admin_nums.length; i++) {",
+									"         let admin_num = admin_nums[i];",
+									"         if (admin_num != sender_admins_num) {",
+									"             pm.expect(pm.response.text()).to.include(\"to\\\":\\\"\"+admin_num);",
+									"             tests[\"Sent to admin number: \"+admin_num+\" success\"] = true;",
+									"         }",
+									"     }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1049,7 +1245,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"This is an incoming message from the test framework.   Ignore.\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{public_number}}\",\n\t\t\t\t\"e164Id\":\"{{public_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{sms_recipient}}\",\n\t\t\t\"e164Id\":\"{{sms_recipient}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
+							"raw": "{\n\t\"session\":\n\t{\n\t\t\"id\":\"f7404eade4b6c3901963335974a84649\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"applicationId\":\"5174006\",\n\t\t\"timestamp\":\"2017-11-30T02:11:27.262Z\",\n\t\t\"userType\":\"HUMAN\",\n\t\t\"initialText\":\"Reply {{sms_recipient}} This is a direct response\",\n\t\t\"callId\":\"38fd259f3bb2bf4209da24b93b3d78d7\",\n\t\t\"to\":\n\t\t\t{\n\t\t\t\t\"id\":\"{{admin_number}}\",\n\t\t\t\t\"e164Id\":\"{{admin_number}}\",\n\t\t\t\t\"name\":null,\n\t\t\t\t\"channel\":\"TEXT\",\n\t\t\t\t\"network\":\"SMS\"\n\t\t\t\t\n\t\t\t},\n\t\t\"from\":\n\t\t{\n\t\t\t\"id\":\"{{_one_admins_number}}\",\n\t\t\t\"e164Id\":\"{{_one_admins_number}}\",\n\t\t\t\"name\":null,\n\t\t\t\"channel\":\"TEXT\",\n\t\t\t\"network\":\"SMS\"\n\t\t\n\t\t},\n\t\t\"headers\":\n\t\t{\n\t\t\t\"Call-ID\":\"vhp3tr8wmsct\",\n\t\t\t\"CSeq\":\"1 INVITE\",\n\t\t\t\"Max-Forwards\":\"70\",\n\t\t\t\"Request URI\":\"sip:15185520209@10.149.190.100:5061;transport=udp\",\n\t\t\t\"x-sid\":\"66446dfe43f6ab3d8c9df37ddbc55f6d\",\n\t\t\t\"From\":\"<sip:17813086976@10.149.190.100>;tag=15oanfw51agy1\",\n\t\t\t\"To\":\"<sip:15185520209@10.149.190.100:5061;transport=udp>\",\n\t\t\t\"Content-Length\":\"4\",\n\t\t\t\"x-tropo-sms\":\"true\",\n\t\t\t\"Contact\":\"<sip:169.47.53.190:5060;transport=udp>\",\n\t\t\t\"Content-Type\":\"text/plain\",\n\t\t\t\"Via\":\"SIP/2.0/UDP 169.47.53.190:5060;branch=z9hG4bKt934ixuu4j94;rport=5060;received=10.149.190.26\"\n\t\t}\n\t}\n}"
 						},
 						"url": {
 							"raw": "{{url}}/initialCPaaSUrl",
@@ -1061,6 +1257,167 @@
 							]
 						},
 						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/smsDeliveryReceiptHandler - Accepted DLR to our \"fake\" number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5ef013d2-48c0-45ac-889e-40b05b336300",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"data\":{\n\t\t\"callId\":\"ef5f5104471c331da2eb53f2fb1c8266-1\",\n\t\t\"sub\":\"001\",\n\t\t\"stat\":\"Accepted\",\n\t\t\"err\":\"000\",\n\t\t\"submitDate\":\"1802092112\",\n\t\t\"sessionId\":\"b3f168e5312654e5887f0deb12c30fa8\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"dlvrd\":\"000\",\n\t\t\"from\":\"15186502307\",\n\t\t\"to\":\"+18885551234\",\n\t\t\"id\":\"1810425375\",\n\t\t\"applicationId\":\"5174177\",\n\t\t\"eventTimeStamp\":1518210736258,\n\t\t\"doneDate\":\"1802092112\"\n\t\t\n\t},\n\t\"resource\":\"sms\",\n\t\"name\":\"SMS DLR Webhook\",\n\t\"id\":\"7283000f-b923-47cd-979e-2547415e8324\",\n\t\"event\":\"smsdlr\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/smsDeliveryReceiptHandler",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"smsDeliveryReceiptHandler"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/smsDeliveryReceiptHandler - Rejected DLR to our \"fake\" number copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5ef013d2-48c0-45ac-889e-40b05b336300",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"data\":{\n\t\t\"callId\":\"0cc9cdb7305f2aa1363ed6fe2ec3c561-1\",\n\t\t\"sub\":\"001\",\n\t\t\"stat\":\"Rejected\",\n\t\t\"err\":\"720\",\n\t\t\"submitDate\":\"1802092235\",\n\t\t\"sessionId\":\"c0f4c4bf006365d6ca3f90816dcafa3d\",\n\t\t\"accountId\":\"5045948\",\n\t\t\"dlvrd\":\"000\",\n\t\t\"from\":\"15186502307\",\n\t\t\"to\":\"+18885551234\",\n\t\t\"id\":\"2880672904\",\n\t\t\"applicationId\":\"5174177\",\n\t\t\"eventTimeStamp\":1518215707173,\n\t\t\"doneDate\":\"1802092235\"\n\t\t\n\t},\n\t\"resource\":\"sms\",\n\t\"name\":\"SMS DLR Webhook\",\n\t\"id\":\"7b9124c8-96e9-426b-bbad-611bf82c55cf\",\n\t\"event\":\"smsdlr\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/smsDeliveryReceiptHandler",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"smsDeliveryReceiptHandler"
+							]
+						},
+						"description": "Emulate an inbound STOP SMS"
+					},
+					"response": []
+				},
+				{
+					"name": "/getMemberList check that counters are updated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "45d34414-9270-40cf-8384-0ae42cd62166",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"function isOurTestMember(member) {",
+									"    //console.log(member)",
+									"    return member._id == \"18885551234\";",
+									"}",
+									"",
+									"var ourMember = null;",
+									"",
+									"pm.test(\"Our test user is in the memberlist\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    ourMember = jsonData.find(isOurTestMember);",
+									"    console.log(ourMember)",
+									"    pm.expect(ourMember).to.not.equal(null)",
+									"    //pm.expect(ourMember).to.not.be(null);",
+									"});",
+									"",
+									"pm.test(\"Our test user has the counters incremented\", function () {",
+									"    console.log(ourMember.confirmedFailed)",
+									"    pm.expect(ourMember.confirmedFailed).to.equal(1);",
+									"    pm.expect(ourMember.confirmedSent).to.equal(2);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"firstName\": \"jp\",\n\t\"lastName\": \"shipherd\",\n\t\"number\": \"17813086976\",\n\t\"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{url}}/getMemberList",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"getMemberList"
+							]
+						},
+						"description": "Get the member list from the database"
 					},
 					"response": []
 				},
