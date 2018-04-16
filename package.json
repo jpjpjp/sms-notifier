@@ -27,7 +27,7 @@
   "scripts": {
     "postinstall": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build && cd ..",
     "test": "newman run tests/smsNotifiyMemberList.postman_collection.json -e postman_environment.json",
-    "start": "node server.js"
+    "start": "node backend/server.js"
   },
   "keywords": [],
   "author": "JP Shipherd",
