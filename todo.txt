@@ -1,3 +1,6 @@
+-- Twilio porting project
+  -- Update the client to share the server error message when sending
+  
 -- Add a button to show/hide members, ie: Manage Recipients, Hide Member Management
 -- Break out the webhook specific code so that twilio or another service could do the message
 -- Make ABR stuff (logo, name) work with environment variables
@@ -29,6 +32,9 @@ Done:
 02/05/18 -- Add the ablity for an admin to reply to just one user (work around is for them to do it themselves)
 02/08/18-- Add postman tests to github and make them part of the build process.
 02/08/18 -- Make sure the readme is semi-useful
+11/19/18 -- enabled Twilio for sending message
+11/20/18 -- Support incoming calls and incoming messages to the public number
+11/20/18 -- Added Admin message blast for Twilio
 
 
 

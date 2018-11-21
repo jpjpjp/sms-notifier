@@ -5,3 +5,5 @@ npm-debug.log
 .env
 /*._env
 postman_environment.json
+abr-readme.*
+*.lock

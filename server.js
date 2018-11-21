@@ -44,16 +44,16 @@ var jwtCheck = jwt({
 
 //app.use(jwtCheck);
 
-// HTTP library to communicate with cPaaS
-//var request = require('request');
-// Request Debug library dumps all kinds of info to the console
-//require('request-debug')(request);
-
 // Create the connector to talk to the cPaaS (Communication Platform as a Service)
-// We use Tropo
-// This module needs the memberList object so we initialize it in the callback 
-// of the Member list constructor
-var TropoConnector = require('./tropo-connector.js');
+if (!process.env.CPAAS_IS_TWILIO) {
+  // We use Tropo
+  // This module needs the memberList object so we initialize it in the callback 
+  // of the Member list constructor
+  var TropoConnector = require('./tropo-connector.js');
+} else {
+  // We use Twilio
+  var TwilioConnector = require('./twilio-connector.js');
+}
 var cPaasConnector = {};
 
 // Create the MemberList to talk to the database and maintain member list
@@ -64,7 +64,11 @@ var memberList = new MemberList(function (err, msg) {
   } else {
     console.log(msg);
     // Now that the deb is wired up, initalize the cPaaS module
-    cPaasConnector = new TropoConnector(memberList);
+    if (!process.env.CPAAS_IS_TWILIO) {
+      cPaasConnector = new TropoConnector(memberList);
+    } else {
+      cPaasConnector = new TwilioConnector(memberList);
+    }
 
     // And start our server listening for requests....
     app.listen(port);
