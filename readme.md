@@ -8,7 +8,7 @@ The application is a node express server with a react front end.
 
 The server relies on three external services that must be set up and configured before it will work.<br>
 <br> 1) **Tropo cPaaS** (Communication Platform as a Service).   
-<br> This service provides the phone numbers and does the actual text messaging.   Prior to running the application, a Tropo account should be created at www.tropo.com.  Add a payment method, and contact support to have outbound privileges enabled.
+<br> This service provides the phone numbers and does the actual text messaging.  Developers who do not have a Tropo account should see [Using Twilio instead of Tropo](#replacing-tropo-with-twilio) <br>Prior to running the application, a Tropo account should have been created at www.tropo.com.  Add a payment method, and contact support to have outbound privileges enabled.
 <br> Once an account is available a Tropo WebAPI application must be setup and phone numbers must be configured to use our application.   This step is automated with the <a href='./scripts/setup-tropo.js'> setup-tropo.js</a> script.  Run the script as follows in a command shell from the project directory:
 
     npm install
@@ -61,7 +61,15 @@ Note that all auth0 code is localized to <a href='./client/src/auth.js'>auth.js<
 Prior to running the application, the Auth0 owner needs to set up at least one user in the Auth0 system so that they can
 login to the sms-notifier app.
 
+## Replacing Tropo with Twilio
+For developers who do not have a Tropo account it might be more straightforward to use Twilio.  To use Twilio set the following environment variables:
+* CPAAS_IS_TWILIO: 'TRUE'
+* TWILIO_PUBLIC_NUMBER: some Twilio purchased SMS and Voice enabled phone number
+* TWILIO_ADMIN_NUMBER: a second wilio purchased SMS and Voice enabled phone number
+* TWILIO_ACCOUNT_SID: Available in the Twilio Dashboard
+* TWILIO_AUTH_TOKEN = Available in the Twilio Dashboard
 
+This project does not have scripts to automate purchasing numbers in Twilio so developers must use the Twilio portal to purchase numbers and set the SMS and Voice Webhook URL to https://yourHostUrl/initialCPaaSUrl
 
 ## Branding the Application
 In addition to the configuration steps above, developers should do the following to brand the website and text messages for their organization, as follows:
