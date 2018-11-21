@@ -302,8 +302,9 @@ class TropoConnector {
         } else {
           // We get here only if we could not match the fromNumber to an admin account
           console.error('Got a message to the Admin number from '+fromNum+'. This number does not belong to an Admin');
-          msg = 'Cannot accept messages from this number.  Contact the staff at '+ that.organizationName+' if you think this is an error.';
-          tropo.message(msg, fromNum, null, 'TEXT', that.publicNumber, null, 'SMS', null, 120, null);
+          msg = 'Cannot accept messages from this number.  Contact the staff at '+ that.organizationName+' if you think this is an error.\n'+
+                'Do feel free to text us on '+that.tropoPublicNumber;
+          tropo.message(msg, fromNum, null, 'TEXT', that.tropoAdminNumber, null, 'SMS', null, 120, null);
           return that.packageAndSendMessages(res, tropo);
         }
       });
